@@ -21,6 +21,11 @@ interface InventoryTableProps {
   stockLevels?: Record<string, { bar: number; cellar: number }>;
 }
 
+// Helper function to properly round to one decimal place and avoid floating-point precision issues
+const roundToOneDecimal = (value: number): number => {
+  return Math.round(value * 10) / 10;
+};
+
 export function InventoryTable({ 
   products, 
   showLocations = ["bar", "cellar"], 
@@ -91,7 +96,7 @@ export function InventoryTable({
             const currentStock = stockLevels?.[product.id] || product.stock;
             const barStock = Number(currentStock?.bar) || 0;
             const cellarStock = Number(currentStock?.cellar) || 0;
-            const total = barStock + cellarStock;
+            const total = shouldUseDecimals(product) ? roundToOneDecimal(barStock + cellarStock) : barStock + cellarStock;
             const orderQty = orderQuantities[product.id] || 0;
             const orderCost = orderQty * product.costPerUnit;
 
@@ -109,7 +114,7 @@ export function InventoryTable({
                           onClick={() => {
                             const increment = getStockIncrement(product);
                             const newValue = shouldUseDecimals(product) 
-                              ? Math.max(0, Math.round((barStock - increment) * 10) / 10)
+                              ? Math.max(0, roundToOneDecimal(barStock - increment))
                               : Math.max(0, barStock - increment);
                             onStockChange(product.id, "bar", newValue);
                           }}
@@ -122,7 +127,7 @@ export function InventoryTable({
                           value={shouldUseDecimals(product) ? barStock.toFixed(1) : barStock.toString()}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
-                              ? parseFloat(e.target.value) || 0
+                              ? roundToOneDecimal(parseFloat(e.target.value) || 0)
                               : parseInt(e.target.value) || 0;
                             onStockChange(product.id, "bar", Math.max(0, value));
                           }}
@@ -136,7 +141,7 @@ export function InventoryTable({
                           onClick={() => {
                             const increment = getStockIncrement(product);
                             const newValue = shouldUseDecimals(product)
-                              ? Math.round((barStock + increment) * 10) / 10
+                              ? roundToOneDecimal(barStock + increment)
                               : barStock + increment;
                             onStockChange(product.id, "bar", newValue);
                           }}
@@ -159,7 +164,7 @@ export function InventoryTable({
                           onClick={() => {
                             const increment = getStockIncrement(product);
                             const newValue = shouldUseDecimals(product) 
-                              ? Math.max(0, Math.round((cellarStock - increment) * 10) / 10)
+                              ? Math.max(0, roundToOneDecimal(cellarStock - increment))
                               : Math.max(0, cellarStock - increment);
                             onStockChange(product.id, "cellar", newValue);
                           }}
@@ -172,7 +177,7 @@ export function InventoryTable({
                           value={shouldUseDecimals(product) ? cellarStock.toFixed(1) : cellarStock.toString()}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
-                              ? parseFloat(e.target.value) || 0
+                              ? roundToOneDecimal(parseFloat(e.target.value) || 0)
                               : parseInt(e.target.value) || 0;
                             onStockChange(product.id, "cellar", Math.max(0, value));
                           }}
@@ -186,7 +191,7 @@ export function InventoryTable({
                           onClick={() => {
                             const increment = getStockIncrement(product);
                             const newValue = shouldUseDecimals(product)
-                              ? Math.round((cellarStock + increment) * 10) / 10
+                              ? roundToOneDecimal(cellarStock + increment)
                               : cellarStock + increment;
                             onStockChange(product.id, "cellar", newValue);
                           }}

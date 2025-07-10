@@ -5,8 +5,7 @@ import {
   UtensilsCrossed, 
   SprayCan, 
   GraduationCap,
-  BarChart3,
-  Clock
+  BarChart3
 } from "lucide-react";
 import {
   Sidebar,
@@ -19,7 +18,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
 
 const navigationItems = [
   {
@@ -32,35 +30,30 @@ const navigationItems = [
     url: "/beverages",
     icon: Beer,
     supplier: "Star Pubs-Heineken",
-    deadline: "Thu 4pm",
   },
   {
     title: "Spirits & Wine",
     url: "/spirits",
     icon: Wine,
     supplier: "St Austell",
-    deadline: "Sun 12pm",
   },
   {
     title: "Food Supplies",
     url: "/food",
     icon: UtensilsCrossed,
     supplier: "Salvo & Charles",
-    deadline: "Sun 12pm",
   },
   {
     title: "Cleaning",
     url: "/cleaning",
     icon: SprayCan,
     supplier: "Cormack Commercial",
-    deadline: "Flexible",
   },
   {
     title: "Masterclass",
     url: "/masterclass",
     icon: GraduationCap,
     supplier: "Internal",
-    deadline: "As needed",
   },
 ];
 
@@ -90,32 +83,17 @@ export function AppSidebar() {
                       }
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {!collapsed && (
-                        <>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm leading-none mb-1.5">
-                              {item.title}
-                            </div>
-                            {item.supplier && (
-                              <div className="text-xs text-muted-foreground truncate">
-                                {item.supplier}
-                              </div>
-                            )}
+                       {!collapsed && (
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm leading-none mb-1">
+                            {item.title}
                           </div>
-                          {item.deadline && (
-                            <Badge 
-                              variant="secondary" 
-                              className={`text-xs px-2 py-0.5 flex items-center gap-1 ${
-                                item.deadline === "Thu 4pm" || item.deadline === "Sun 12pm" 
-                                  ? "bg-orange-100 text-orange-800 border-orange-200" 
-                                  : "bg-muted text-muted-foreground border-border"
-                              }`}
-                            >
-                              <Clock className="h-3 w-3" />
-                              {item.deadline}
-                            </Badge>
+                          {item.supplier && (
+                            <div className="text-xs text-muted-foreground truncate">
+                              {item.supplier}
+                            </div>
                           )}
-                        </>
+                        </div>
                       )}
                     </NavLink>
                   </SidebarMenuButton>

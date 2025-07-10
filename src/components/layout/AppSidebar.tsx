@@ -82,7 +82,7 @@ export function AppSidebar() {
                       to={item.url}
                       end
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                        `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 relative z-10 ${
                           isActive
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"

@@ -26,7 +26,7 @@ export function InventoryTable({
   orderQuantities 
 }: InventoryTableProps) {
   const getStockLevel = (product: Product) => {
-    const total = product.stock.bar + product.stock.cellar + (product.stock.holding || 0);
+    const total = product.stock.bar + product.stock.cellar;
     if (total <= product.reorderPoint) return "low";
     if (total <= product.reorderPoint * 1.5) return "medium";
     return "high";
@@ -61,7 +61,7 @@ export function InventoryTable({
         <TableBody>
           {products.map((product) => {
             const stockLevel = getStockLevel(product);
-            const total = product.stock.bar + product.stock.cellar + (product.stock.holding || 0);
+            const total = product.stock.bar + product.stock.cellar;
             const orderQty = orderQuantities[product.id] || 0;
             const orderCost = orderQty * product.costPerUnit;
 
@@ -85,7 +85,7 @@ export function InventoryTable({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onQuantityChange(product.id, Math.max(0, orderQty - 1))}
+                      onClick={() => onQuantityChange(product.id, Math.max(0, Math.round((orderQty - 0.1) * 10) / 10))}
                       disabled={orderQty <= 0}
                     >
                       <Minus className="h-3 w-3" />
@@ -93,14 +93,15 @@ export function InventoryTable({
                     <Input
                       type="number"
                       value={orderQty}
-                      onChange={(e) => onQuantityChange(product.id, Math.max(0, parseInt(e.target.value) || 0))}
+                      onChange={(e) => onQuantityChange(product.id, Math.max(0, parseFloat(e.target.value) || 0))}
                       className="w-16 text-center"
                       min="0"
+                      step="0.1"
                     />
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onQuantityChange(product.id, orderQty + 1)}
+                      onClick={() => onQuantityChange(product.id, Math.round((orderQty + 0.1) * 10) / 10)}
                     >
                       <Plus className="h-3 w-3" />
                     </Button>

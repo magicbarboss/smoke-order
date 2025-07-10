@@ -557,7 +557,7 @@ export default function BeveragesPage() {
         <CardContent>
           <InventoryTable
             products={mockProducts}
-            showLocations={["bar", "cellar", "holding", "comingMon"]}
+            showLocations={["bar", "cellar"]}
             onQuantityChange={handleQuantityChange}
             orderQuantities={orderQuantities}
           />

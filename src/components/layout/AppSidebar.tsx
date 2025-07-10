@@ -102,8 +102,16 @@ export function AppSidebar() {
                               </div>
                             )}
                           </div>
-                          {item.deadline && (item.deadline === "Thu 4pm" || item.deadline === "Sun 12pm") && (
-                            <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-orange-100 text-orange-800 border-orange-200">
+                          {item.deadline && (
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs px-2 py-0.5 flex items-center gap-1 ${
+                                item.deadline === "Thu 4pm" || item.deadline === "Sun 12pm" 
+                                  ? "bg-orange-100 text-orange-800 border-orange-200" 
+                                  : "bg-muted text-muted-foreground border-border"
+                              }`}
+                            >
+                              <Clock className="h-3 w-3" />
                               {item.deadline}
                             </Badge>
                           )}

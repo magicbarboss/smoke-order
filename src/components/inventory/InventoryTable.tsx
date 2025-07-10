@@ -31,7 +31,9 @@ export function InventoryTable({
 }: InventoryTableProps) {
   const getStockLevel = (product: Product) => {
     const currentStock = stockLevels?.[product.id] || product.stock;
-    const total = currentStock.bar + currentStock.cellar;
+    const barStock = currentStock?.bar || 0;
+    const cellarStock = currentStock?.cellar || 0;
+    const total = barStock + cellarStock;
     if (total <= product.reorderPoint) return "low";
     if (total <= product.reorderPoint * 1.5) return "medium";
     return "high";
@@ -54,7 +56,8 @@ export function InventoryTable({
       "Gin", 
       "Vodka", 
       "Rum", 
-      "Wine"
+      "Wine",
+      "Cordials/Post-Mix"
     ];
     return decimalCategories.some(category => 
       product.category.toLowerCase().includes(category.toLowerCase())
@@ -86,7 +89,9 @@ export function InventoryTable({
           {products.map((product) => {
             const stockLevel = getStockLevel(product);
             const currentStock = stockLevels?.[product.id] || product.stock;
-            const total = currentStock.bar + currentStock.cellar;
+            const barStock = currentStock?.bar || 0;
+            const cellarStock = currentStock?.cellar || 0;
+            const total = barStock + cellarStock;
             const orderQty = orderQuantities[product.id] || 0;
             const orderCost = orderQty * product.costPerUnit;
 
@@ -104,17 +109,17 @@ export function InventoryTable({
                           onClick={() => {
                             const increment = getStockIncrement(product);
                             const newValue = shouldUseDecimals(product) 
-                              ? Math.max(0, Math.round((currentStock.bar - increment) * 10) / 10)
-                              : Math.max(0, currentStock.bar - increment);
+                              ? Math.max(0, Math.round((barStock - increment) * 10) / 10)
+                              : Math.max(0, barStock - increment);
                             onStockChange(product.id, "bar", newValue);
                           }}
-                          disabled={currentStock.bar <= 0}
+                          disabled={barStock <= 0}
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
                         <Input
                           type="number"
-                          value={currentStock.bar}
+                          value={barStock}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
                               ? parseFloat(e.target.value) || 0
@@ -131,8 +136,8 @@ export function InventoryTable({
                           onClick={() => {
                             const increment = getStockIncrement(product);
                             const newValue = shouldUseDecimals(product)
-                              ? Math.round((currentStock.bar + increment) * 10) / 10
-                              : currentStock.bar + increment;
+                              ? Math.round((barStock + increment) * 10) / 10
+                              : barStock + increment;
                             onStockChange(product.id, "bar", newValue);
                           }}
                         >
@@ -140,7 +145,7 @@ export function InventoryTable({
                         </Button>
                       </div>
                     ) : (
-                      currentStock.bar
+                      barStock
                     )}
                   </TableCell>
                 )}
@@ -154,17 +159,17 @@ export function InventoryTable({
                           onClick={() => {
                             const increment = getStockIncrement(product);
                             const newValue = shouldUseDecimals(product) 
-                              ? Math.max(0, Math.round((currentStock.cellar - increment) * 10) / 10)
-                              : Math.max(0, currentStock.cellar - increment);
+                              ? Math.max(0, Math.round((cellarStock - increment) * 10) / 10)
+                              : Math.max(0, cellarStock - increment);
                             onStockChange(product.id, "cellar", newValue);
                           }}
-                          disabled={currentStock.cellar <= 0}
+                          disabled={cellarStock <= 0}
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
                         <Input
                           type="number"
-                          value={currentStock.cellar}
+                          value={cellarStock}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
                               ? parseFloat(e.target.value) || 0
@@ -181,8 +186,8 @@ export function InventoryTable({
                           onClick={() => {
                             const increment = getStockIncrement(product);
                             const newValue = shouldUseDecimals(product)
-                              ? Math.round((currentStock.cellar + increment) * 10) / 10
-                              : currentStock.cellar + increment;
+                              ? Math.round((cellarStock + increment) * 10) / 10
+                              : cellarStock + increment;
                             onStockChange(product.id, "cellar", newValue);
                           }}
                         >
@@ -190,7 +195,7 @@ export function InventoryTable({
                         </Button>
                       </div>
                     ) : (
-                      currentStock.cellar
+                      cellarStock
                     )}
                   </TableCell>
                 )}

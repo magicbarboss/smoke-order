@@ -124,7 +124,7 @@ export function InventoryTable({
                         </Button>
                         <Input
                           type="number"
-                          value={shouldUseDecimals(product) ? barStock.toFixed(1) : barStock.toString()}
+                          value={shouldUseDecimals(product) ? roundToOneDecimal(barStock).toFixed(1) : barStock.toString()}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
                               ? roundToOneDecimal(parseFloat(e.target.value) || 0)
@@ -150,7 +150,7 @@ export function InventoryTable({
                         </Button>
                       </div>
                     ) : (
-                      shouldUseDecimals(product) ? barStock.toFixed(1) : barStock
+                      shouldUseDecimals(product) ? roundToOneDecimal(barStock).toFixed(1) : barStock
                     )}
                   </TableCell>
                 )}
@@ -174,7 +174,7 @@ export function InventoryTable({
                         </Button>
                         <Input
                           type="number"
-                          value={shouldUseDecimals(product) ? cellarStock.toFixed(1) : cellarStock.toString()}
+                          value={shouldUseDecimals(product) ? roundToOneDecimal(cellarStock).toFixed(1) : cellarStock.toString()}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
                               ? roundToOneDecimal(parseFloat(e.target.value) || 0)
@@ -200,14 +200,14 @@ export function InventoryTable({
                         </Button>
                       </div>
                     ) : (
-                      shouldUseDecimals(product) ? cellarStock.toFixed(1) : cellarStock
+                      shouldUseDecimals(product) ? roundToOneDecimal(cellarStock).toFixed(1) : cellarStock
                     )}
                   </TableCell>
                 )}
                 {showLocations.includes("holding") && <TableCell>{product.stock.holding || 0}</TableCell>}
                 {showLocations.includes("comingMon") && <TableCell>{product.stock.comingMon || 0}</TableCell>}
                 <TableCell className="font-medium">
-                  {shouldUseDecimals(product) ? total.toFixed(1) : total}
+                  {shouldUseDecimals(product) ? roundToOneDecimal(total).toFixed(1) : total}
                 </TableCell>
                 <TableCell>
                   <Badge variant={getStockBadgeVariant(stockLevel)}>

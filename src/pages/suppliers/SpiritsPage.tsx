@@ -5,60 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/types/inventory";
 import { ShoppingCart, Clock, Building } from "lucide-react";
-
-// Mock data for St Austell spirits with bottle/tenth tracking
-const mockProducts: Product[] = [
-  {
-    id: "whiskey-1",
-    name: "Jameson Irish Whiskey 70cl",
-    category: "Whiskey",
-    unit: "bottle",
-    costPerUnit: 24.50,
-    stock: { bar: 0.3, cellar: 2.1, holding: 0 },
-    reorderPoint: 1.5,
-    supplierId: "st-austell"
-  },
-  {
-    id: "gin-1", 
-    name: "Tanqueray London Dry 70cl",
-    category: "Gin",
-    unit: "bottle",
-    costPerUnit: 28.90,
-    stock: { bar: 0.7, cellar: 1.2, holding: 0 },
-    reorderPoint: 1.0,
-    supplierId: "st-austell"
-  },
-  {
-    id: "vodka-1",
-    name: "Grey Goose 70cl",
-    category: "Vodka", 
-    unit: "bottle",
-    costPerUnit: 45.30,
-    stock: { bar: 0.2, cellar: 0.8, holding: 0 },
-    reorderPoint: 1.0,
-    supplierId: "st-austell"
-  },
-  {
-    id: "rum-1",
-    name: "Bacardi Carta Blanca 70cl",
-    category: "Rum",
-    unit: "bottle",
-    costPerUnit: 22.40,
-    stock: { bar: 0.9, cellar: 2.3, holding: 0 },
-    reorderPoint: 1.5,
-    supplierId: "st-austell"
-  },
-  {
-    id: "wine-1",
-    name: "Sauvignon Blanc 75cl",
-    category: "White Wine",
-    unit: "bottle",
-    costPerUnit: 12.80,
-    stock: { bar: 2, cellar: 8, holding: 0 },
-    reorderPoint: 6,
-    supplierId: "st-austell"
-  },
-];
+import { stAustellProducts } from "@/data/st-austell-products";
 
 export default function SpiritsPage() {
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
@@ -82,7 +29,7 @@ export default function SpiritsPage() {
   };
 
   const totalItems = Object.values(orderQuantities).reduce((sum, qty) => sum + qty, 0);
-  const totalCost = mockProducts.reduce((sum, product) => {
+  const totalCost = stAustellProducts.reduce((sum, product) => {
     const qty = orderQuantities[product.id] || 0;
     return sum + (qty * product.costPerUnit);
   }, 0);
@@ -160,7 +107,7 @@ export default function SpiritsPage() {
         </CardHeader>
         <CardContent>
           <InventoryTable
-            products={mockProducts}
+            products={stAustellProducts}
             showLocations={["bar", "cellar"]}
             onQuantityChange={handleQuantityChange}
             orderQuantities={orderQuantities}

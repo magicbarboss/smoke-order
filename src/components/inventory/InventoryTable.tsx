@@ -17,16 +17,21 @@ interface InventoryTableProps {
   showLocations?: string[];
   onQuantityChange: (productId: string, quantity: number) => void;
   orderQuantities: Record<string, number>;
+  onStockChange?: (productId: string, location: string, quantity: number) => void;
+  stockLevels?: Record<string, { bar: number; cellar: number }>;
 }
 
 export function InventoryTable({ 
   products, 
   showLocations = ["bar", "cellar"], 
   onQuantityChange,
-  orderQuantities 
+  orderQuantities,
+  onStockChange,
+  stockLevels
 }: InventoryTableProps) {
   const getStockLevel = (product: Product) => {
-    const total = product.stock.bar + product.stock.cellar;
+    const currentStock = stockLevels?.[product.id] || product.stock;
+    const total = currentStock.bar + currentStock.cellar;
     if (total <= product.reorderPoint) return "low";
     if (total <= product.reorderPoint * 1.5) return "medium";
     return "high";
@@ -61,7 +66,8 @@ export function InventoryTable({
         <TableBody>
           {products.map((product) => {
             const stockLevel = getStockLevel(product);
-            const total = product.stock.bar + product.stock.cellar;
+            const currentStock = stockLevels?.[product.id] || product.stock;
+            const total = currentStock.bar + currentStock.cellar;
             const orderQty = orderQuantities[product.id] || 0;
             const orderCost = orderQty * product.costPerUnit;
 
@@ -69,8 +75,72 @@ export function InventoryTable({
               <TableRow key={product.id}>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>{product.category}</TableCell>
-                {showLocations.includes("bar") && <TableCell>{product.stock.bar}</TableCell>}
-                {showLocations.includes("cellar") && <TableCell>{product.stock.cellar}</TableCell>}
+                {showLocations.includes("bar") && (
+                  <TableCell>
+                    {onStockChange ? (
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onStockChange(product.id, "bar", Math.max(0, Math.round((currentStock.bar - 0.1) * 10) / 10))}
+                          disabled={currentStock.bar <= 0}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <Input
+                          type="number"
+                          value={currentStock.bar}
+                          onChange={(e) => onStockChange(product.id, "bar", Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="w-16 text-center"
+                          min="0"
+                          step="0.1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onStockChange(product.id, "bar", Math.round((currentStock.bar + 0.1) * 10) / 10)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      currentStock.bar
+                    )}
+                  </TableCell>
+                )}
+                {showLocations.includes("cellar") && (
+                  <TableCell>
+                    {onStockChange ? (
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onStockChange(product.id, "cellar", Math.max(0, Math.round((currentStock.cellar - 0.1) * 10) / 10))}
+                          disabled={currentStock.cellar <= 0}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <Input
+                          type="number"
+                          value={currentStock.cellar}
+                          onChange={(e) => onStockChange(product.id, "cellar", Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="w-16 text-center"
+                          min="0"
+                          step="0.1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onStockChange(product.id, "cellar", Math.round((currentStock.cellar + 0.1) * 10) / 10)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      currentStock.cellar
+                    )}
+                  </TableCell>
+                )}
                 {showLocations.includes("holding") && <TableCell>{product.stock.holding || 0}</TableCell>}
                 {showLocations.includes("comingMon") && <TableCell>{product.stock.comingMon || 0}</TableCell>}
                 <TableCell className="font-medium">{total}</TableCell>
@@ -85,7 +155,7 @@ export function InventoryTable({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onQuantityChange(product.id, Math.max(0, Math.round((orderQty - 0.1) * 10) / 10))}
+                      onClick={() => onQuantityChange(product.id, Math.max(0, orderQty - 1))}
                       disabled={orderQty <= 0}
                     >
                       <Minus className="h-3 w-3" />
@@ -93,15 +163,15 @@ export function InventoryTable({
                     <Input
                       type="number"
                       value={orderQty}
-                      onChange={(e) => onQuantityChange(product.id, Math.max(0, parseFloat(e.target.value) || 0))}
+                      onChange={(e) => onQuantityChange(product.id, Math.max(0, parseInt(e.target.value) || 0))}
                       className="w-16 text-center"
                       min="0"
-                      step="0.1"
+                      step="1"
                     />
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onQuantityChange(product.id, Math.round((orderQty + 0.1) * 10) / 10)}
+                      onClick={() => onQuantityChange(product.id, orderQty + 1)}
                     >
                       <Plus className="h-3 w-3" />
                     </Button>

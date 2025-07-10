@@ -62,11 +62,22 @@ const mockProducts: Product[] = [
 
 export default function SpiritsPage() {
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
+  const [stockLevels, setStockLevels] = useState<Record<string, { bar: number; cellar: number }>>({});
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setOrderQuantities(prev => ({
       ...prev,
       [productId]: quantity
+    }));
+  };
+
+  const handleStockChange = (productId: string, location: string, quantity: number) => {
+    setStockLevels(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [location]: quantity
+      }
     }));
   };
 
@@ -153,6 +164,8 @@ export default function SpiritsPage() {
             showLocations={["bar", "cellar"]}
             onQuantityChange={handleQuantityChange}
             orderQuantities={orderQuantities}
+            onStockChange={handleStockChange}
+            stockLevels={stockLevels}
           />
         </CardContent>
       </Card>

@@ -82,29 +82,32 @@ export function AppSidebar() {
                       to={item.url}
                       end
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
                           isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                         }`
                       }
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
                       {!collapsed && (
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium">{item.title}</div>
-                          {item.supplier && (
-                            <div className="text-xs opacity-70 truncate">
-                              {item.supplier}
+                        <>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm leading-none mb-1">
+                              {item.title}
                             </div>
+                            {item.supplier && (
+                              <div className="text-xs text-muted-foreground/70 truncate">
+                                {item.supplier}
+                              </div>
+                            )}
+                          </div>
+                          {item.deadline && (item.deadline === "Thu 4pm" || item.deadline === "Sun 12pm") && (
+                            <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-orange-100 text-orange-800 border-orange-200">
+                              {item.deadline}
+                            </Badge>
                           )}
-                        </div>
-                      )}
-                      {!collapsed && item.deadline && item.deadline !== "Flexible" && item.deadline !== "As needed" && (
-                        <Badge variant="outline" className="text-xs">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {item.deadline}
-                        </Badge>
+                        </>
                       )}
                     </NavLink>
                   </SidebarMenuButton>

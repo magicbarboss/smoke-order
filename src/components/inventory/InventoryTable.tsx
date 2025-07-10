@@ -31,8 +31,8 @@ export function InventoryTable({
 }: InventoryTableProps) {
   const getStockLevel = (product: Product) => {
     const currentStock = stockLevels?.[product.id] || product.stock;
-    const barStock = currentStock?.bar || 0;
-    const cellarStock = currentStock?.cellar || 0;
+    const barStock = Number(currentStock?.bar) || 0;
+    const cellarStock = Number(currentStock?.cellar) || 0;
     const total = barStock + cellarStock;
     if (total <= product.reorderPoint) return "low";
     if (total <= product.reorderPoint * 1.5) return "medium";
@@ -89,8 +89,8 @@ export function InventoryTable({
           {products.map((product) => {
             const stockLevel = getStockLevel(product);
             const currentStock = stockLevels?.[product.id] || product.stock;
-            const barStock = currentStock?.bar || 0;
-            const cellarStock = currentStock?.cellar || 0;
+            const barStock = Number(currentStock?.bar) || 0;
+            const cellarStock = Number(currentStock?.cellar) || 0;
             const total = barStock + cellarStock;
             const orderQty = orderQuantities[product.id] || 0;
             const orderCost = orderQty * product.costPerUnit;
@@ -119,7 +119,7 @@ export function InventoryTable({
                         </Button>
                         <Input
                           type="number"
-                          value={barStock}
+                          value={barStock.toString()}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
                               ? parseFloat(e.target.value) || 0
@@ -169,7 +169,7 @@ export function InventoryTable({
                         </Button>
                         <Input
                           type="number"
-                          value={cellarStock}
+                          value={cellarStock.toString()}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
                               ? parseFloat(e.target.value) || 0

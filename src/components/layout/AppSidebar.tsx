@@ -93,11 +93,11 @@ export function AppSidebar() {
                       {!collapsed && (
                         <>
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm leading-none mb-1">
+                            <div className="font-medium text-sm leading-none mb-1.5">
                               {item.title}
                             </div>
                             {item.supplier && (
-                              <div className="text-xs text-muted-foreground/70 truncate">
+                              <div className="text-xs text-muted-foreground truncate">
                                 {item.supplier}
                               </div>
                             )}

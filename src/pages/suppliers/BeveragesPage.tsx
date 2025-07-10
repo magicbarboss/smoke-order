@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/types/inventory";
 import { ShoppingCart, Clock, Building } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useOrders } from "@/hooks/useOrders";
+import { Toaster } from "@/components/ui/toaster";
 
 // Star Pubs-Heineken inventory from uploaded data
 const mockProducts: Product[] = [
@@ -473,6 +477,16 @@ const mockProducts: Product[] = [
 export default function BeveragesPage() {
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
   const [stockLevels, setStockLevels] = useState<Record<string, { bar: number; cellar: number }>>({});
+  const { user, loading } = useAuth();
+  const { saveDraft, submitOrder, saving, submitting } = useOrders();
+  const navigate = useNavigate();
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setOrderQuantities(prev => ({
@@ -499,6 +513,45 @@ export default function BeveragesPage() {
 
   const vatAmount = totalCost * 0.2;
   const totalWithVAT = totalCost + vatAmount;
+
+  const handleSaveDraft = async () => {
+    const items = Object.entries(orderQuantities)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([productId, quantity]) => {
+        const product = mockProducts.find(p => p.id === productId)!;
+        return {
+          productId,
+          quantity,
+          unitPrice: product.costPerUnit,
+          totalPrice: quantity * product.costPerUnit,
+        };
+      });
+
+    await saveDraft('star-pubs', items, totalWithVAT);
+  };
+
+  const handleSubmitOrder = async () => {
+    const items = Object.entries(orderQuantities)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([productId, quantity]) => {
+        const product = mockProducts.find(p => p.id === productId)!;
+        return {
+          productId,
+          quantity,
+          unitPrice: product.costPerUnit,
+          totalPrice: quantity * product.costPerUnit,
+        };
+      });
+
+    const result = await submitOrder('star-pubs', items, totalWithVAT);
+    if (result.success) {
+      setOrderQuantities({});
+    }
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -547,11 +600,18 @@ export default function BeveragesPage() {
             </div>
           </div>
           <div className="flex gap-2 mt-4">
-            <Button disabled={totalItems === 0}>
-              Submit Order
+            <Button 
+              disabled={totalItems === 0 || submitting} 
+              onClick={handleSubmitOrder}
+            >
+              {submitting ? 'Submitting...' : 'Submit Order'}
             </Button>
-            <Button variant="outline" disabled={totalItems === 0}>
-              Save Draft
+            <Button 
+              variant="outline" 
+              disabled={totalItems === 0 || saving}
+              onClick={handleSaveDraft}
+            >
+              {saving ? 'Saving...' : 'Save Draft'}
             </Button>
             <Button variant="ghost" disabled={totalItems === 0} onClick={() => setOrderQuantities({})}>
               Clear
@@ -576,6 +636,7 @@ export default function BeveragesPage() {
           />
         </CardContent>
       </Card>
+      <Toaster />
     </div>
   );
 }

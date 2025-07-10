@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import Dashboard from "./pages/Dashboard";
 import BeveragesPage from "./pages/suppliers/BeveragesPage";
 import SpiritsPage from "./pages/suppliers/SpiritsPage";
+import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
               <div className="flex-1 p-6">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/auth" element={<AuthPage />} />
                   <Route path="/beverages" element={<BeveragesPage />} />
                   <Route path="/spirits" element={<SpiritsPage />} />
                   <Route path="/food" element={<div>Food Supplies - Coming Soon</div>} />

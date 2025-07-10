@@ -119,7 +119,7 @@ export function InventoryTable({
                         </Button>
                         <Input
                           type="number"
-                          value={barStock.toString()}
+                          value={shouldUseDecimals(product) ? barStock.toFixed(1) : barStock.toString()}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
                               ? parseFloat(e.target.value) || 0
@@ -145,7 +145,7 @@ export function InventoryTable({
                         </Button>
                       </div>
                     ) : (
-                      barStock
+                      shouldUseDecimals(product) ? barStock.toFixed(1) : barStock
                     )}
                   </TableCell>
                 )}
@@ -169,7 +169,7 @@ export function InventoryTable({
                         </Button>
                         <Input
                           type="number"
-                          value={cellarStock.toString()}
+                          value={shouldUseDecimals(product) ? cellarStock.toFixed(1) : cellarStock.toString()}
                           onChange={(e) => {
                             const value = shouldUseDecimals(product) 
                               ? parseFloat(e.target.value) || 0
@@ -195,13 +195,15 @@ export function InventoryTable({
                         </Button>
                       </div>
                     ) : (
-                      cellarStock
+                      shouldUseDecimals(product) ? cellarStock.toFixed(1) : cellarStock
                     )}
                   </TableCell>
                 )}
                 {showLocations.includes("holding") && <TableCell>{product.stock.holding || 0}</TableCell>}
                 {showLocations.includes("comingMon") && <TableCell>{product.stock.comingMon || 0}</TableCell>}
-                <TableCell className="font-medium">{total}</TableCell>
+                <TableCell className="font-medium">
+                  {shouldUseDecimals(product) ? total.toFixed(1) : total}
+                </TableCell>
                 <TableCell>
                   <Badge variant={getStockBadgeVariant(stockLevel)}>
                     {stockLevel.toUpperCase()}

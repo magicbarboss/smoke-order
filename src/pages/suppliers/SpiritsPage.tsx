@@ -101,14 +101,22 @@ const SpiritsPage = () => {
   };
 
   const handleQuantityChange = (productId: string, quantity: number) => {
-    console.log('🔄 Quantity change:', { productId, quantity, user: user?.id });
+    console.log(`[SpiritsPage] handleQuantityChange called with productId: ${productId}, quantity: ${quantity}`);
+    console.log(`[SpiritsPage] Current orderQuantities before update:`, orderQuantities);
+    
+    // Find the product name for better debugging
+    const product = products.find(p => p.id === productId);
+    console.log(`[SpiritsPage] Product found:`, product ? `${product.name} (${product.id})` : 'Product not found');
+    
     setOrderQuantities(prev => {
-      const newQuantities = {
-        ...prev,
-        [productId]: quantity,
-      };
-      console.log('📦 Updated order quantities:', newQuantities);
-      return newQuantities;
+      const updated = { ...prev, [productId]: quantity };
+      console.log(`[SpiritsPage] Updated orderQuantities:`, updated);
+      
+      // Calculate new total items for debugging
+      const newTotalItems = Object.values(updated).reduce((sum, qty) => sum + qty, 0);
+      console.log(`[SpiritsPage] New total items:`, newTotalItems);
+      
+      return updated;
     });
   };
 
@@ -376,6 +384,19 @@ const SpiritsPage = () => {
           <p className="text-muted-foreground">Account: 764145 | Spirits & Wines</p>
         </div>
         <div className="flex items-center space-x-4">
+          <button 
+            onClick={() => {
+              console.log(`[SpiritsPage] Test button clicked - setting test quantities`);
+              const testProduct = products[0];
+              if (testProduct) {
+                console.log(`[SpiritsPage] Setting test quantity for first product: ${testProduct.name} (${testProduct.id})`);
+                handleQuantityChange(testProduct.id, 5);
+              }
+            }}
+            className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
+          >
+            Test Set Qty
+          </button>
           <Dialog open={isPriceDialogOpen} onOpenChange={setIsPriceDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">

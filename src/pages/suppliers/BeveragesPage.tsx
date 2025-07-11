@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { AddProductDialog } from "@/components/inventory/AddProductDialog";
+import { ZeroStockDialog } from "@/components/inventory/ZeroStockDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -191,6 +192,12 @@ export default function BeveragesPage() {
             supplierName="Star Pubs & Bars"
             existingCategories={Array.from(new Set(products.map(p => p.category)))}
             onProductAdded={fetchProducts}
+          />
+          <ZeroStockDialog
+            supplierId="star-pubs"
+            supplierName="Star Pubs & Bars"
+            productCount={products.length}
+            onComplete={fetchProducts}
           />
           <div className="flex items-center space-x-4">
             <Badge variant="outline" className="flex items-center gap-2">

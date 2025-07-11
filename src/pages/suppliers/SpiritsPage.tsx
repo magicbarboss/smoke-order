@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { AddProductDialog } from "@/components/inventory/AddProductDialog";
+import { ZeroStockDialog } from "@/components/inventory/ZeroStockDialog";
 import { useOrders } from "@/hooks/useOrders";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -339,6 +340,12 @@ const SpiritsPage = () => {
             supplierName="St Austell Brewery"
             existingCategories={Array.from(new Set(products.map(p => p.category)))}
             onProductAdded={fetchProducts}
+          />
+          <ZeroStockDialog
+            supplierId="st-austell"
+            supplierName="St Austell Brewery"
+            productCount={products.length}
+            onComplete={fetchProducts}
           />
           <Dialog open={isPriceDialogOpen} onOpenChange={setIsPriceDialogOpen}>
             <DialogTrigger asChild>

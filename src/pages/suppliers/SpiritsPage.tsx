@@ -101,10 +101,15 @@ const SpiritsPage = () => {
   };
 
   const handleQuantityChange = (productId: string, quantity: number) => {
-    setOrderQuantities(prev => ({
-      ...prev,
-      [productId]: quantity,
-    }));
+    console.log('🔄 Quantity change:', { productId, quantity, user: user?.id });
+    setOrderQuantities(prev => {
+      const newQuantities = {
+        ...prev,
+        [productId]: quantity,
+      };
+      console.log('📦 Updated order quantities:', newQuantities);
+      return newQuantities;
+    });
   };
 
   const handleStockChange = async (productId: string, location: string, quantity: number) => {
@@ -146,6 +151,13 @@ const SpiritsPage = () => {
   const orderItems = Object.entries(orderQuantities).filter(([_, quantity]) => quantity > 0);
   const totalItems = orderItems.reduce((sum, [_, quantity]) => sum + quantity, 0);
   
+  console.log('📊 Order Summary:', { 
+    orderQuantities, 
+    orderItems: orderItems.length, 
+    totalItems,
+    user: user?.id
+  });
+  
   const subtotal = orderItems.reduce((sum, [productId, quantity]) => {
     const product = products.find(p => p.id === productId);
     return sum + (product ? product.current_price * quantity : 0);
@@ -156,36 +168,122 @@ const SpiritsPage = () => {
   const totalWithVAT = subtotal + vatAmount;
 
   const handleSaveDraft = async () => {
+    console.log('💾 Save Draft clicked:', { 
+      user: user?.id, 
+      totalItems, 
+      orderItems: orderItems.length,
+      orderQuantities 
+    });
+
+    if (!user) {
+      console.error('❌ No user authenticated');
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to save orders.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const items = orderItems.map(([productId, quantity]) => {
       const product = products.find(p => p.id === productId);
-      return {
+      const item = {
         productId,
         quantity,
         unitPrice: product?.current_price || 0,
         totalPrice: (product?.current_price || 0) * quantity,
       };
+      console.log('📝 Order item:', item, 'Product:', product?.name);
+      return item;
     });
 
-    const result = await saveDraft('st-austell', items, totalWithVAT);
-    if (result.success) {
-      setOrderQuantities({});
+    console.log('📤 Sending draft order:', { items, totalWithVAT });
+    
+    try {
+      const result = await saveDraft('st-austell', items, totalWithVAT);
+      console.log('✅ Save draft result:', result);
+      
+      if (result.success) {
+        setOrderQuantities({});
+        toast({
+          title: "Draft Saved",
+          description: "Order draft saved successfully.",
+        });
+      } else {
+        console.error('❌ Save draft failed:', result.error);
+        toast({
+          title: "Save Failed",
+          description: result.error?.message || "Failed to save draft. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('❌ Save draft error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while saving.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleSubmitOrder = async () => {
+    console.log('🚀 Submit Order clicked:', { 
+      user: user?.id, 
+      totalItems, 
+      orderItems: orderItems.length,
+      orderQuantities 
+    });
+
+    if (!user) {
+      console.error('❌ No user authenticated');
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to submit orders.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const items = orderItems.map(([productId, quantity]) => {
       const product = products.find(p => p.id === productId);
-      return {
+      const item = {
         productId,
         quantity,
         unitPrice: product?.current_price || 0,
         totalPrice: (product?.current_price || 0) * quantity,
       };
+      console.log('📝 Order item:', item, 'Product:', product?.name);
+      return item;
     });
 
-    const result = await submitOrder('st-austell', items, totalWithVAT);
-    if (result.success) {
-      setOrderQuantities({});
+    console.log('📤 Submitting order:', { items, totalWithVAT });
+    
+    try {
+      const result = await submitOrder('st-austell', items, totalWithVAT);
+      console.log('✅ Submit order result:', result);
+      
+      if (result.success) {
+        setOrderQuantities({});
+        toast({
+          title: "Order Submitted",
+          description: "Order submitted successfully.",
+        });
+      } else {
+        console.error('❌ Submit order failed:', result.error);
+        toast({
+          title: "Submit Failed",
+          description: result.error?.message || "Failed to submit order. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('❌ Submit order error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while submitting.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -381,7 +479,18 @@ const SpiritsPage = () => {
             >
               {saving ? 'Saving...' : 'Save Draft'}
             </Button>
-            <Button variant="ghost" disabled={totalItems === 0} onClick={() => setOrderQuantities({})}>
+            <Button 
+              variant="ghost" 
+              disabled={totalItems === 0} 
+              onClick={() => {
+                console.log('🗑️ Clear button clicked');
+                setOrderQuantities({});
+                toast({
+                  title: "Order Cleared",
+                  description: "Order quantities have been cleared.",
+                });
+              }}
+            >
               Clear
             </Button>
           </div>

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
+import { useRef } from "react";
 
 interface InventoryTableProps {
   products: Product[];
@@ -80,6 +81,30 @@ export function InventoryTable({
   const getStockStep = (product: Product) => shouldUseDecimals(product) ? 0.1 : 1;
   const getStockIncrement = (product: Product) => shouldUseDecimals(product) ? 0.1 : 1;
 
+  // Get quick entry presets based on product category/unit
+  const getQuickEntryPresets = (product: Product) => {
+    const category = product.category.toLowerCase();
+    const unit = product.unit.toLowerCase();
+    
+    // For bottles and cans (common case sizes)
+    if (unit.includes('bottle') || unit.includes('can') || category.includes('bottle') || category.includes('can')) {
+      return [6, 12, 18, 24];
+    }
+    
+    // For kegs (common quantities)
+    if (unit.includes('keg') || category.includes('keg') || category.includes('draught')) {
+      return [1, 2, 3, 5];
+    }
+    
+    // For cases/boxes
+    if (unit.includes('case') || unit.includes('box')) {
+      return [1, 2, 3, 5, 10];
+    }
+    
+    // Default presets for other products
+    return [1, 5, 10, 20];
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -139,7 +164,7 @@ export function InventoryTable({
                               : parseInt(e.target.value) || 0;
                             onStockChange(product.id, "bar", Math.max(0, value));
                           }}
-                          className="w-16 text-center"
+                          className="w-20 text-center"
                           min="0"
                           step={getStockStep(product)}
                         />
@@ -189,7 +214,7 @@ export function InventoryTable({
                               : parseInt(e.target.value) || 0;
                             onStockChange(product.id, "cellar", Math.max(0, value));
                           }}
-                          className="w-16 text-center"
+                          className="w-20 text-center"
                           min="0"
                           step={getStockStep(product)}
                         />
@@ -224,30 +249,60 @@ export function InventoryTable({
                 </TableCell>
                 <TableCell>£{product.costPerUnit.toFixed(2)}</TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onQuantityChange(product.id, Math.max(0, orderQty - 1))}
-                      disabled={orderQty <= 0}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <Input
-                      type="number"
-                      value={orderQty}
-                      onChange={(e) => onQuantityChange(product.id, Math.max(0, parseInt(e.target.value) || 0))}
-                      className="w-16 text-center"
-                      min="0"
-                      step="1"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onQuantityChange(product.id, orderQty + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                  <div className="flex flex-col space-y-1">
+                    {/* Main input controls */}
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onQuantityChange(product.id, Math.max(0, orderQty - 1))}
+                        disabled={orderQty <= 0}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <Input
+                        type="number"
+                        value={orderQty}
+                        onChange={(e) => onQuantityChange(product.id, Math.max(0, parseInt(e.target.value) || 0))}
+                        onClick={(e) => e.currentTarget.select()}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const nextInput = e.currentTarget.closest('tr')?.nextElementSibling?.querySelector('input[type="number"]') as HTMLInputElement;
+                            if (nextInput) {
+                              nextInput.focus();
+                              nextInput.select();
+                            }
+                          }
+                        }}
+                        className="w-20 text-center"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onQuantityChange(product.id, orderQty + 1)}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    
+                    {/* Quick entry presets */}
+                    <div className="flex flex-wrap gap-1">
+                      {getQuickEntryPresets(product).map((preset) => (
+                        <Button
+                          key={preset}
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onQuantityChange(product.id, preset)}
+                          className="h-6 px-2 text-xs bg-muted/50 hover:bg-muted"
+                        >
+                          {preset}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">

@@ -65,10 +65,17 @@ export function InventoryTable({
       "RED WINE", 
       "ROSE WINE", 
       "BUBBLES",
-      "CORDIALS/POST-MIX"
+      "CORDIALS/POST-MIX",
+      // St Austell mixed case categories
+      "Whiskey",
+      "Gin", 
+      "Vodka",
+      "Rum",
+      "Cocktails",
+      "Shooters"
     ];
     return decimalCategories.some(category => 
-      product.category.toUpperCase().includes(category.toUpperCase())
+      product.category.includes(category)
     );
   };
 

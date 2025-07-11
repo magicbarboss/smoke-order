@@ -262,16 +262,31 @@ export function InventoryTable({
                       </Button>
                       <Input
                         type="number"
-                        value={orderQty}
-                        onChange={(e) => onQuantityChange(product.id, Math.max(0, parseInt(e.target.value) || 0))}
-                        onClick={(e) => e.currentTarget.select()}
+                        value={orderQty || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "") {
+                            onQuantityChange(product.id, 0);
+                          } else {
+                            const numValue = parseInt(value);
+                            if (!isNaN(numValue)) {
+                              onQuantityChange(product.id, Math.max(0, numValue));
+                            }
+                          }
+                        }}
+                        onFocus={(e) => {
+                          setTimeout(() => e.target.select(), 0);
+                        }}
+                        onClick={(e) => {
+                          setTimeout(() => e.currentTarget.select(), 0);
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
                             const nextInput = e.currentTarget.closest('tr')?.nextElementSibling?.querySelector('input[type="number"]') as HTMLInputElement;
                             if (nextInput) {
                               nextInput.focus();
-                              nextInput.select();
+                              setTimeout(() => nextInput.select(), 0);
                             }
                           }
                         }}

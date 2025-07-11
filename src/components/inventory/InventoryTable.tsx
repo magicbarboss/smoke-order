@@ -220,12 +220,7 @@ export function InventoryTable({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        console.log(`[InventoryTable] Decrease button clicked for product ${product.id} (${product.name}), current qty: ${orderQty}`);
-                        const newQty = Math.max(0, orderQty - 1);
-                        console.log(`[InventoryTable] Calling onQuantityChange with productId: ${product.id}, newQty: ${newQty}`);
-                        onQuantityChange(product.id, newQty);
-                      }}
+                      onClick={() => onQuantityChange(product.id, Math.max(0, orderQty - 1))}
                       disabled={orderQty <= 0}
                     >
                       <Minus className="h-3 w-3" />
@@ -233,12 +228,7 @@ export function InventoryTable({
                     <Input
                       type="number"
                       value={orderQty}
-                      onChange={(e) => {
-                        console.log(`[InventoryTable] Input changed for product ${product.id} (${product.name}), input value: ${e.target.value}`);
-                        const newQty = Math.max(0, parseInt(e.target.value) || 0);
-                        console.log(`[InventoryTable] Calling onQuantityChange with productId: ${product.id}, newQty: ${newQty}`);
-                        onQuantityChange(product.id, newQty);
-                      }}
+                      onChange={(e) => onQuantityChange(product.id, Math.max(0, parseInt(e.target.value) || 0))}
                       className="w-16 text-center"
                       min="0"
                       step="1"
@@ -246,12 +236,7 @@ export function InventoryTable({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        console.log(`[InventoryTable] Increase button clicked for product ${product.id} (${product.name}), current qty: ${orderQty}`);
-                        const newQty = orderQty + 1;
-                        console.log(`[InventoryTable] Calling onQuantityChange with productId: ${product.id}, newQty: ${newQty}`);
-                        onQuantityChange(product.id, newQty);
-                      }}
+                      onClick={() => onQuantityChange(product.id, orderQty + 1)}
                     >
                       <Plus className="h-3 w-3" />
                     </Button>

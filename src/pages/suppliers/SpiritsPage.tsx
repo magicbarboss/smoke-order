@@ -101,23 +101,10 @@ const SpiritsPage = () => {
   };
 
   const handleQuantityChange = (productId: string, quantity: number) => {
-    console.log(`[SpiritsPage] handleQuantityChange called with productId: ${productId}, quantity: ${quantity}`);
-    console.log(`[SpiritsPage] Current orderQuantities before update:`, orderQuantities);
-    
-    // Find the product name for better debugging
-    const product = products.find(p => p.id === productId);
-    console.log(`[SpiritsPage] Product found:`, product ? `${product.name} (${product.id})` : 'Product not found');
-    
-    setOrderQuantities(prev => {
-      const updated = { ...prev, [productId]: quantity };
-      console.log(`[SpiritsPage] Updated orderQuantities:`, updated);
-      
-      // Calculate new total items for debugging
-      const newTotalItems = Object.values(updated).reduce((sum, qty) => sum + qty, 0);
-      console.log(`[SpiritsPage] New total items:`, newTotalItems);
-      
-      return updated;
-    });
+    setOrderQuantities(prev => ({
+      ...prev,
+      [productId]: quantity,
+    }));
   };
 
   const handleStockChange = async (productId: string, location: string, quantity: number) => {
@@ -159,13 +146,6 @@ const SpiritsPage = () => {
   const orderItems = Object.entries(orderQuantities).filter(([_, quantity]) => quantity > 0);
   const totalItems = orderItems.reduce((sum, [_, quantity]) => sum + quantity, 0);
   
-  console.log('📊 Order Summary:', { 
-    orderQuantities, 
-    orderItems: orderItems.length, 
-    totalItems,
-    user: user?.id
-  });
-  
   const subtotal = orderItems.reduce((sum, [productId, quantity]) => {
     const product = products.find(p => p.id === productId);
     return sum + (product ? product.current_price * quantity : 0);
@@ -176,15 +156,7 @@ const SpiritsPage = () => {
   const totalWithVAT = subtotal + vatAmount;
 
   const handleSaveDraft = async () => {
-    console.log('💾 Save Draft clicked:', { 
-      user: user?.id, 
-      totalItems, 
-      orderItems: orderItems.length,
-      orderQuantities 
-    });
-
     if (!user) {
-      console.error('❌ No user authenticated');
       toast({
         title: "Authentication Error",
         description: "You must be logged in to save orders.",
@@ -195,30 +167,23 @@ const SpiritsPage = () => {
 
     const items = orderItems.map(([productId, quantity]) => {
       const product = products.find(p => p.id === productId);
-      const item = {
+      return {
         productId,
         quantity,
         unitPrice: product?.current_price || 0,
         totalPrice: (product?.current_price || 0) * quantity,
       };
-      console.log('📝 Order item:', item, 'Product:', product?.name);
-      return item;
     });
-
-    console.log('📤 Sending draft order:', { items, totalWithVAT });
     
     try {
       const result = await saveDraft('st-austell', items, totalWithVAT);
-      console.log('✅ Save draft result:', result);
       
       if (result.success) {
-        setOrderQuantities({});
         toast({
           title: "Draft Saved",
-          description: "Order draft saved successfully.",
+          description: "Order draft saved successfully. Continue editing or submit when ready.",
         });
       } else {
-        console.error('❌ Save draft failed:', result.error);
         toast({
           title: "Save Failed",
           description: result.error?.message || "Failed to save draft. Please try again.",
@@ -226,7 +191,6 @@ const SpiritsPage = () => {
         });
       }
     } catch (error) {
-      console.error('❌ Save draft error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while saving.",
@@ -236,15 +200,7 @@ const SpiritsPage = () => {
   };
 
   const handleSubmitOrder = async () => {
-    console.log('🚀 Submit Order clicked:', { 
-      user: user?.id, 
-      totalItems, 
-      orderItems: orderItems.length,
-      orderQuantities 
-    });
-
     if (!user) {
-      console.error('❌ No user authenticated');
       toast({
         title: "Authentication Error",
         description: "You must be logged in to submit orders.",
@@ -255,21 +211,16 @@ const SpiritsPage = () => {
 
     const items = orderItems.map(([productId, quantity]) => {
       const product = products.find(p => p.id === productId);
-      const item = {
+      return {
         productId,
         quantity,
         unitPrice: product?.current_price || 0,
         totalPrice: (product?.current_price || 0) * quantity,
       };
-      console.log('📝 Order item:', item, 'Product:', product?.name);
-      return item;
     });
-
-    console.log('📤 Submitting order:', { items, totalWithVAT });
     
     try {
       const result = await submitOrder('st-austell', items, totalWithVAT);
-      console.log('✅ Submit order result:', result);
       
       if (result.success) {
         setOrderQuantities({});
@@ -278,7 +229,6 @@ const SpiritsPage = () => {
           description: "Order submitted successfully.",
         });
       } else {
-        console.error('❌ Submit order failed:', result.error);
         toast({
           title: "Submit Failed",
           description: result.error?.message || "Failed to submit order. Please try again.",
@@ -286,7 +236,6 @@ const SpiritsPage = () => {
         });
       }
     } catch (error) {
-      console.error('❌ Submit order error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while submitting.",
@@ -384,19 +333,6 @@ const SpiritsPage = () => {
           <p className="text-muted-foreground">Account: 764145 | Spirits & Wines</p>
         </div>
         <div className="flex items-center space-x-4">
-          <button 
-            onClick={() => {
-              console.log(`[SpiritsPage] Test button clicked - setting test quantities`);
-              const testProduct = products[0];
-              if (testProduct) {
-                console.log(`[SpiritsPage] Setting test quantity for first product: ${testProduct.name} (${testProduct.id})`);
-                handleQuantityChange(testProduct.id, 5);
-              }
-            }}
-            className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
-          >
-            Test Set Qty
-          </button>
           <Dialog open={isPriceDialogOpen} onOpenChange={setIsPriceDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -504,7 +440,6 @@ const SpiritsPage = () => {
               variant="ghost" 
               disabled={totalItems === 0} 
               onClick={() => {
-                console.log('🗑️ Clear button clicked');
                 setOrderQuantities({});
                 toast({
                   title: "Order Cleared",

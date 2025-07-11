@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
+import { AddProductDialog } from "@/components/inventory/AddProductDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,80 +31,81 @@ export default function BeveragesPage() {
 
   // Fetch products from database
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // Fetch products for Star Pubs supplier only
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('supplier_id', 'star-pubs')
-          .order('category', { ascending: true });
-
-        if (productsError) {
-          console.error('Error fetching products:', productsError);
-          toast({
-            title: "Error",
-            description: "Failed to load products",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Fetch stock levels
-        const { data: stockData, error: stockError } = await supabase
-          .from('stock_levels')
-          .select('*');
-
-        if (stockError) {
-          console.error('Error fetching stock levels:', stockError);
-          toast({
-            title: "Error", 
-            description: "Failed to load stock levels",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Transform data to match Product interface
-        const transformedProducts: Product[] = productsData.map(product => {
-          // Find stock levels for this product
-          const productStocks = stockData.filter(stock => stock.product_id === product.id);
-          
-          const stock: StockLocation = {
-            bar: productStocks.find(s => s.location === 'bar')?.quantity || 0,
-            cellar: productStocks.find(s => s.location === 'cellar')?.quantity || 0,
-            holding: productStocks.find(s => s.location === 'holding')?.quantity || 0,
-          };
-
-          return {
-            id: product.id,
-            name: product.name,
-            category: product.category,
-            unit: product.unit,
-            costPerUnit: Number(product.current_price),
-            stock,
-            reorderPoint: product.reorder_point || 0,
-            supplierId: product.supplier_id,
-          };
-        });
-
-        setProducts(transformedProducts);
-      } catch (error) {
-        console.error('Unexpected error:', error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (user) {
       fetchProducts();
     }
   }, [user]);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      // Fetch products for Star Pubs supplier only
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('supplier_id', 'star-pubs')
+        .order('category', { ascending: true });
+
+      if (productsError) {
+        console.error('Error fetching products:', productsError);
+        toast({
+          title: "Error",
+          description: "Failed to load products",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Fetch stock levels
+      const { data: stockData, error: stockError } = await supabase
+        .from('stock_levels')
+        .select('*');
+
+      if (stockError) {
+        console.error('Error fetching stock levels:', stockError);
+        toast({
+          title: "Error", 
+          description: "Failed to load stock levels",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Transform data to match Product interface
+      const transformedProducts: Product[] = productsData.map(product => {
+        // Find stock levels for this product
+        const productStocks = stockData.filter(stock => stock.product_id === product.id);
+        
+        const stock: StockLocation = {
+          bar: productStocks.find(s => s.location === 'bar')?.quantity || 0,
+          cellar: productStocks.find(s => s.location === 'cellar')?.quantity || 0,
+          holding: productStocks.find(s => s.location === 'holding')?.quantity || 0,
+        };
+
+        return {
+          id: product.id,
+          name: product.name,
+          category: product.category,
+          unit: product.unit,
+          costPerUnit: Number(product.current_price),
+          stock,
+          reorderPoint: product.reorder_point || 0,
+          supplierId: product.supplier_id,
+        };
+      });
+
+      setProducts(transformedProducts);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setOrderQuantities(prev => ({
@@ -180,18 +182,26 @@ export default function BeveragesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Beverages Supplier</h1>
-          <p className="text-muted-foreground">Fresh beverages inventory</p>
+          <h1 className="text-3xl font-bold">Star Pubs & Bars</h1>
+          <p className="text-muted-foreground">Premium beverages and bar supplies</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Badge variant="outline" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Deadline: Thursday 4pm
-          </Badge>
-          <Badge variant="secondary" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Delivery: Monday 10am-2pm
-          </Badge>
+        <div className="flex items-center gap-4">
+          <AddProductDialog
+            supplierId="star-pubs"
+            supplierName="Star Pubs & Bars"
+            existingCategories={Array.from(new Set(products.map(p => p.category)))}
+            onProductAdded={fetchProducts}
+          />
+          <div className="flex items-center space-x-4">
+            <Badge variant="outline" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Deadline: Thursday 4pm
+            </Badge>
+            <Badge variant="secondary" className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Delivery: Monday 10am-2pm
+            </Badge>
+          </div>
         </div>
       </div>
 

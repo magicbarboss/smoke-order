@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
+import { AddProductDialog } from "@/components/inventory/AddProductDialog";
 import { useOrders } from "@/hooks/useOrders";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -333,6 +334,12 @@ const SpiritsPage = () => {
           <p className="text-muted-foreground">Account: 764145 | Spirits & Wines</p>
         </div>
         <div className="flex items-center space-x-4">
+          <AddProductDialog
+            supplierId="st-austell"
+            supplierName="St Austell Brewery"
+            existingCategories={Array.from(new Set(products.map(p => p.category)))}
+            onProductAdded={fetchProducts}
+          />
           <Dialog open={isPriceDialogOpen} onOpenChange={setIsPriceDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">

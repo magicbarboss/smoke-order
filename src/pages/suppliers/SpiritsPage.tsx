@@ -468,7 +468,15 @@ const SpiritsPage = () => {
             onQuantityChange={handleQuantityChange}
             orderQuantities={orderQuantities}
             onStockChange={handleStockChange}
-            stockLevels={{}}
+            stockLevels={Object.fromEntries(
+              Object.entries(stockLevels).map(([productId, stocks]) => [
+                productId,
+                {
+                  bar: stocks.find(s => s.location === 'bar')?.quantity || 0,
+                  cellar: stocks.find(s => s.location === 'cellar')?.quantity || 0,
+                }
+              ])
+            )}
           />
         </CardContent>
       </Card>

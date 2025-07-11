@@ -54,18 +54,21 @@ export function InventoryTable({
 
   const shouldUseDecimals = (product: Product) => {
     const decimalCategories = [
-      "Draught Keg", 
-      "Craft Draught Keg", 
-      "Spirits", 
-      "Whiskey", 
-      "Gin", 
-      "Vodka", 
-      "Rum", 
-      "Wine",
-      "Cordials/Post-Mix"
+      "DRAUGHT KEG", 
+      "CRAFT DRAUGHT KEG", 
+      "GIN", 
+      "VODKA", 
+      "RUM", 
+      "WHISKEY", 
+      "SPIRITS MISC", 
+      "WHITE WINE", 
+      "RED WINE", 
+      "ROSE WINE", 
+      "BUBBLES",
+      "CORDIALS/POST-MIX"
     ];
     return decimalCategories.some(category => 
-      product.category.toLowerCase().includes(category.toLowerCase())
+      product.category.toUpperCase().includes(category.toUpperCase())
     );
   };
 

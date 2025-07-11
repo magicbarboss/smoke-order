@@ -32,10 +32,11 @@ export default function BeveragesPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Fetch products with their stock levels
+        // Fetch products for Star Pubs supplier only
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
+          .eq('supplier_id', 'star-pubs')
           .order('category', { ascending: true });
 
         if (productsError) {

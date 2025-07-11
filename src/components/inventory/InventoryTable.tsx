@@ -53,29 +53,27 @@ export function InventoryTable({
   };
 
   const shouldUseDecimals = (product: Product) => {
+    // All St Austell products use decimals (shot-based service)
+    if (product.supplierId === 'st-austell') {
+      return true;
+    }
+    
+    // Category-based logic for Star Pubs and other suppliers
     const decimalCategories = [
-      "DRAUGHT KEG", 
+      // Star Pubs keg categories (drawn from kegs)
+      "DRAUGHT KEG",
       "CRAFT DRAUGHT KEG", 
-      "GIN", 
-      "VODKA", 
-      "RUM", 
-      "WHISKEY", 
-      "SPIRITS MISC", 
+      "CORDIALS/POST-MIX",
+      // Wine categories
+      "WINE", 
       "WHITE WINE", 
       "RED WINE", 
       "ROSE WINE", 
-      "BUBBLES",
-      "CORDIALS/POST-MIX",
-      // St Austell mixed case categories
-      "Whiskey",
-      "Gin", 
-      "Vodka",
-      "Rum",
-      "Cocktails",
-      "Shooters"
+      "BUBBLES"
     ];
+    
     return decimalCategories.some(category => 
-      product.category.includes(category)
+      product.category.toUpperCase().includes(category.toUpperCase())
     );
   };
 

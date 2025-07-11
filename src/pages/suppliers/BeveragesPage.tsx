@@ -515,6 +515,7 @@ export default function BeveragesPage() {
   const totalWithVAT = totalCost + vatAmount;
 
   const handleSaveDraft = async () => {
+    console.log('Save Draft clicked', { orderQuantities, totalItems });
     const items = Object.entries(orderQuantities)
       .filter(([_, quantity]) => quantity > 0)
       .map(([productId, quantity]) => {
@@ -527,10 +528,13 @@ export default function BeveragesPage() {
         };
       });
 
-    await saveDraft('star-pubs', items, totalWithVAT);
+    console.log('Items to save:', items);
+    const result = await saveDraft('star-pubs', items, totalWithVAT);
+    console.log('Save draft result:', result);
   };
 
   const handleSubmitOrder = async () => {
+    console.log('Submit Order clicked', { orderQuantities, totalItems });
     const items = Object.entries(orderQuantities)
       .filter(([_, quantity]) => quantity > 0)
       .map(([productId, quantity]) => {
@@ -543,7 +547,9 @@ export default function BeveragesPage() {
         };
       });
 
+    console.log('Items to submit:', items);
     const result = await submitOrder('star-pubs', items, totalWithVAT);
+    console.log('Submit order result:', result);
     if (result.success) {
       setOrderQuantities({});
     }
@@ -613,7 +619,10 @@ export default function BeveragesPage() {
             >
               {saving ? 'Saving...' : 'Save Draft'}
             </Button>
-            <Button variant="ghost" disabled={totalItems === 0} onClick={() => setOrderQuantities({})}>
+            <Button variant="ghost" disabled={totalItems === 0} onClick={() => {
+              console.log('Clear clicked');
+              setOrderQuantities({});
+            }}>
               Clear
             </Button>
           </div>

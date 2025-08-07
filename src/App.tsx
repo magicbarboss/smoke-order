@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import Dashboard from "./pages/Dashboard";
 import BeveragesPage from "./pages/suppliers/BeveragesPage";
 import SpiritsPage from "./pages/suppliers/SpiritsPage";
+import FoodPage from "./pages/suppliers/FoodPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -37,7 +38,7 @@ const App = () => (
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/beverages" element={<BeveragesPage />} />
                   <Route path="/spirits" element={<SpiritsPage />} />
-                  <Route path="/food" element={<div>Food Supplies - Coming Soon</div>} />
+                  <Route path="/food" element={<FoodPage />} />
                   <Route path="/cleaning" element={<div>Cleaning Supplies - Coming Soon</div>} />
                   <Route path="/masterclass" element={<div>Masterclass Supplies - Coming Soon</div>} />
                   <Route path="*" element={<NotFound />} />

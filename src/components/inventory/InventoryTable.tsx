@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
 import { useRef } from "react";
+import { format } from "date-fns";
 
 interface InventoryTableProps {
   products: Product[];
@@ -20,6 +21,7 @@ interface InventoryTableProps {
   orderQuantities: Record<string, number>;
   onStockChange?: (productId: string, location: string, quantity: number) => void;
   stockLevels?: Record<string, { bar: number; cellar: number }>;
+  orderHistory?: Record<string, { lastOrderDate: string; lastOrderQuantity: number; totalQuantityInPeriod: number; status: string } | null>;
 }
 
 // Helper function to properly round to one decimal place and avoid floating-point precision issues
@@ -33,7 +35,8 @@ export function InventoryTable({
   onQuantityChange,
   orderQuantities,
   onStockChange,
-  stockLevels
+  stockLevels,
+  orderHistory
 }: InventoryTableProps) {
   const getStockLevel = (product: Product) => {
     const currentStock = stockLevels?.[product.id] || product.stock;
@@ -119,6 +122,8 @@ export function InventoryTable({
             <TableHead>Total</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Unit Cost</TableHead>
+            <TableHead>Reorder Point</TableHead>
+            <TableHead>Last Ordered</TableHead>
             <TableHead>Order Qty</TableHead>
             <TableHead>Cost</TableHead>
           </TableRow>
@@ -248,6 +253,22 @@ export function InventoryTable({
                   </Badge>
                 </TableCell>
                 <TableCell>£{product.costPerUnit.toFixed(2)}</TableCell>
+                <TableCell>{product.reorderPoint}</TableCell>
+                <TableCell>
+                  {orderHistory?.[product.id] ? (
+                    <div className="text-xs">
+                      <div className="font-medium">
+                        {orderHistory[product.id]!.lastOrderQuantity} on{' '}
+                        {format(new Date(orderHistory[product.id]!.lastOrderDate), 'MMM d')}
+                      </div>
+                      <div className="text-muted-foreground">
+                        {orderHistory[product.id]!.totalQuantityInPeriod} total last 7d
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">No recent orders</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <div className="flex flex-col space-y-1">
                     {/* Main input controls */}

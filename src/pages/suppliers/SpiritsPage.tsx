@@ -14,6 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
 import { Settings, ShoppingCart, Clock, Building } from "lucide-react";
+import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
+import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
+import { useOrderHistory } from "@/hooks/useOrderHistory";
 
 interface Product {
   id: string;
@@ -33,14 +36,13 @@ interface StockLevel {
 const SpiritsPage = () => {
   const { user, loading } = useAuth();
   const { saveDraft, submitOrder, saving, submitting } = useOrders();
+  const { orderHistory, getLastOrderInfo } = useOrderHistory('st-austell', 7);
   const { toast } = useToast();
   
   const [products, setProducts] = useState<Product[]>([]);
   const [stockLevels, setStockLevels] = useState<Record<string, StockLevel[]>>({});
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [isPriceDialogOpen, setIsPriceDialogOpen] = useState(false);
-  const [editingPrices, setEditingPrices] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchProducts();
@@ -82,13 +84,6 @@ const SpiritsPage = () => {
 
       setProducts(productsData || []);
       setStockLevels(stockByProduct);
-      
-      // Initialize editing prices
-      const initialPrices: Record<string, number> = {};
-      productsData?.forEach(product => {
-        initialPrices[product.id] = product.current_price;
-      });
-      setEditingPrices(initialPrices);
       
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -246,53 +241,6 @@ const SpiritsPage = () => {
     }
   };
 
-  const handleUpdatePrices = async () => {
-    try {
-      const updates = Object.entries(editingPrices).map(([productId, price]) => {
-        const originalProduct = products.find(p => p.id === productId);
-        if (originalProduct && originalProduct.current_price !== price) {
-          return { id: productId, price: price, oldPrice: originalProduct.current_price };
-        }
-        return null;
-      }).filter(Boolean);
-
-      if (updates.length === 0) {
-        toast({
-          title: "No Changes",
-          description: "No price changes to save.",
-        });
-        return;
-      }
-
-      // Update prices in database
-      for (const update of updates) {
-        if (update) {
-          const { error } = await supabase
-            .from('products')
-            .update({ current_price: update.price })
-            .eq('id', update.id);
-
-          if (error) throw error;
-        }
-      }
-
-      // Refresh products
-      await fetchProducts();
-      setIsPriceDialogOpen(false);
-
-      toast({
-        title: "Prices Updated",
-        description: `Successfully updated ${updates.length} product prices.`,
-      });
-    } catch (error) {
-      console.error('Error updating prices:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update prices. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (loading || isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
@@ -347,57 +295,22 @@ const SpiritsPage = () => {
             productCount={products.length}
             onComplete={fetchProducts}
           />
-          <Dialog open={isPriceDialogOpen} onOpenChange={setIsPriceDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Update Prices
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Update Product Prices</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4">
-                {products.map(product => (
-                  <div key={product.id} className="grid grid-cols-3 gap-4 items-center">
-                    <div>
-                      <span className="text-sm font-medium">{product.name}</span>
-                      <div className="text-xs text-muted-foreground">{product.category}</div>
-                    </div>
-                    <div className="text-sm">
-                      Current: £{product.current_price.toFixed(2)}
-                    </div>
-                    <div>
-                      <Label htmlFor={`price-${product.id}`} className="sr-only">
-                        New price for {product.name}
-                      </Label>
-                      <Input
-                        id={`price-${product.id}`}
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={editingPrices[product.id] || 0}
-                        onChange={(e) => setEditingPrices(prev => ({
-                          ...prev,
-                          [product.id]: parseFloat(e.target.value) || 0
-                        }))}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                ))}
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button variant="outline" onClick={() => setIsPriceDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleUpdatePrices}>
-                    Update Prices
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <ProductEditDialog
+            products={products}
+            supplierName="St Austell Brewery"
+            existingCategories={Array.from(new Set(products.map(p => p.category)))}
+            onProductsUpdated={fetchProducts}
+          />
+          <OrderHistoryDialog
+            supplierId="st-austell"
+            supplierName="St Austell Brewery"
+            onQuickReorder={(productId, quantity) => {
+              setOrderQuantities(prev => ({
+                ...prev,
+                [productId]: (prev[productId] || 0) + quantity,
+              }));
+            }}
+          />
           <Badge variant="destructive" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Deadline: Sunday 12pm
@@ -489,6 +402,12 @@ const SpiritsPage = () => {
                   bar: stocks.find(s => s.location === 'bar')?.quantity || 0,
                   cellar: stocks.find(s => s.location === 'cellar')?.quantity || 0,
                 }
+              ])
+            )}
+            orderHistory={Object.fromEntries(
+              Object.entries(orderHistory).map(([productId, items]) => [
+                productId,
+                getLastOrderInfo(productId)
               ])
             )}
           />

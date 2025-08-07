@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { AddProductDialog } from "@/components/inventory/AddProductDialog";
 import { ZeroStockDialog } from "@/components/inventory/ZeroStockDialog";
+import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
+import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +15,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { Toaster } from "@/components/ui/toaster";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useOrderHistory } from "@/hooks/useOrderHistory";
 
 export default function BeveragesPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -21,6 +24,7 @@ export default function BeveragesPage() {
   const [stockLevels, setStockLevels] = useState<Record<string, { bar: number; cellar: number }>>({});
   const { user, loading: authLoading } = useAuth();
   const { saveDraft, submitOrder, saving, submitting } = useOrders();
+  const { orderHistory, getLastOrderInfo } = useOrderHistory('star-pubs', 7);
   const navigate = useNavigate();
 
   // Redirect to auth if not logged in
@@ -149,7 +153,7 @@ export default function BeveragesPage() {
       });
 
     console.log('Items to save:', items);
-    const result = await saveDraft('beverages-supplier', items, totalWithVAT);
+    const result = await saveDraft('star-pubs', items, totalWithVAT);
     console.log('Save draft result:', result);
   };
 
@@ -168,7 +172,7 @@ export default function BeveragesPage() {
       });
 
     console.log('Items to submit:', items);
-    const result = await submitOrder('beverages-supplier', items, totalWithVAT);
+    const result = await submitOrder('star-pubs', items, totalWithVAT);
     console.log('Submit order result:', result);
     if (result.success) {
       setOrderQuantities({});
@@ -198,6 +202,30 @@ export default function BeveragesPage() {
             supplierName="Star Pubs & Bars"
             productCount={products.length}
             onComplete={fetchProducts}
+          />
+          <ProductEditDialog
+            products={products.map(p => ({
+              id: p.id,
+              name: p.name,
+              category: p.category,
+              unit: p.unit,
+              current_price: p.costPerUnit,
+              reorder_point: p.reorderPoint,
+              supplier_id: p.supplierId,
+            }))}
+            supplierName="Star Pubs & Bars"
+            existingCategories={Array.from(new Set(products.map(p => p.category)))}
+            onProductsUpdated={fetchProducts}
+          />
+          <OrderHistoryDialog
+            supplierId="star-pubs"
+            supplierName="Star Pubs & Bars"
+            onQuickReorder={(productId, quantity) => {
+              setOrderQuantities(prev => ({
+                ...prev,
+                [productId]: (prev[productId] || 0) + quantity,
+              }));
+            }}
           />
           <div className="flex items-center space-x-4">
             <Badge variant="outline" className="flex items-center gap-2">
@@ -276,6 +304,12 @@ export default function BeveragesPage() {
             orderQuantities={orderQuantities}
             onStockChange={handleStockChange}
             stockLevels={stockLevels}
+            orderHistory={Object.fromEntries(
+              Object.entries(orderHistory).map(([productId, items]) => [
+                productId,
+                getLastOrderInfo(productId)
+              ])
+            )}
           />
         </CardContent>
       </Card>

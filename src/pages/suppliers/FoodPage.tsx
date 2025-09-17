@@ -28,6 +28,7 @@ interface Product {
   stock: { bar: number; cellar: number; holding?: number; comingMon?: number };
   supplierId: string;
   reorderPoint: number;
+  discontinued?: boolean;
 }
 
 export default function FoodPage() {
@@ -69,6 +70,7 @@ export default function FoodPage() {
         stock: { bar: 0, cellar: 0, holding: 0, comingMon: 0 },
         supplierId: product.supplier_id,
         reorderPoint: product.reorder_point,
+        discontinued: product.discontinued || false
       }));
       setProducts(transformedProducts);
     } catch (error) {

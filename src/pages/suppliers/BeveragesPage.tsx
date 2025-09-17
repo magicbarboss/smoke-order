@@ -44,40 +44,50 @@ export default function BeveragesPage() {
     }
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      if (!user) return;
+  const fetchProducts = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('supplier_id', 'star-pubs')
+        .order('category', { ascending: true })
+        .order('name', { ascending: true });
+
+      if (error) throw error;
       
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('supplier_id', 'star-pubs');
+      // Transform database products to match our Product interface
+      const transformedProducts: Product[] = (data || []).map(product => ({
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        unit: product.unit,
+        costPerUnit: Number(product.current_price),
+        stock: { bar: 0, cellar: 0, holding: 0, comingMon: 0 },
+        reorderPoint: product.reorder_point || 0,
+        supplierId: product.supplier_id,
+        discontinued: product.discontinued || false
+      }));
 
-        if (error) throw error;
-        
-        // Transform database products to match our Product interface
-        const transformedProducts: Product[] = data.map(product => ({
-          id: product.id,
-          name: product.name,
-          category: product.category,
-          unit: product.unit,
-          costPerUnit: Number(product.current_price),
-          stock: { bar: 0, cellar: 0, holding: 0, comingMon: 0 },
-          reorderPoint: product.reorder_point || 0,
-          supplierId: product.supplier_id
-        }));
+      setProducts(transformedProducts);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load products. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setProducts(transformedProducts);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
+  useEffect(() => {
+    if (user) {
+      fetchProducts();
+    }
   }, [user]);
 
   // Create category groupings - Updated based on actual product analysis
@@ -220,7 +230,7 @@ export default function BeveragesPage() {
             supplierId="star-pubs"
             supplierName="Star Pubs & Bars"
             existingCategories={categories}
-            onProductAdded={() => {}}
+            onProductAdded={fetchProducts}
           />
           <ZeroStockDialog
             supplierId="star-pubs"
@@ -237,10 +247,11 @@ export default function BeveragesPage() {
               current_price: p.costPerUnit,
               reorder_point: p.reorderPoint,
               supplier_id: p.supplierId,
+              discontinued: p.discontinued,
             }))}
             supplierName="Star Pubs & Bars"
             existingCategories={categories}
-            onProductsUpdated={() => {}}
+            onProductsUpdated={fetchProducts}
           />
           <OrderHistoryDialog
             supplierId="star-pubs"

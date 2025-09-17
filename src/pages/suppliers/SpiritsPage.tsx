@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,11 @@ import { useOrders } from "@/hooks/useOrders";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
-import { Settings, ShoppingCart, Clock, Building } from "lucide-react";
+import { Settings, ShoppingCart, Clock, Building, Search, Filter } from "lucide-react";
 import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
 import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Product {
   id: string;
@@ -43,6 +44,8 @@ const SpiritsPage = () => {
   const [stockLevels, setStockLevels] = useState<Record<string, StockLevel[]>>({});
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   useEffect(() => {
     fetchProducts();
@@ -250,8 +253,24 @@ const SpiritsPage = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  // Get unique categories for filter
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
+    return uniqueCategories.sort();
+  }, [products]);
+
+  // Filter products based on search and category
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.category.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, selectedCategory]);
+
   // Transform products to match InventoryTable format
-  const transformedProducts = products.map(product => {
+  const transformedProducts = filteredProducts.map(product => {
     const productStockLevels = stockLevels[product.id] || [];
     const stockByLocation = productStockLevels.reduce((acc, stock) => {
       acc[stock.location] = stock.quantity;
@@ -277,16 +296,16 @@ const SpiritsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">St Austell</h1>
+          <h1 className="text-3xl font-bold text-foreground">St Austell Brewery</h1>
           <p className="text-muted-foreground">Account: 764145 | Spirits & Wines</p>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-4">
           <AddProductDialog
             supplierId="st-austell"
             supplierName="St Austell Brewery"
-            existingCategories={Array.from(new Set(products.map(p => p.category)))}
+            existingCategories={categories}
             onProductAdded={fetchProducts}
           />
           <ZeroStockDialog
@@ -298,7 +317,7 @@ const SpiritsPage = () => {
           <ProductEditDialog
             products={products}
             supplierName="St Austell Brewery"
-            existingCategories={Array.from(new Set(products.map(p => p.category)))}
+            existingCategories={categories}
             onProductsUpdated={fetchProducts}
           />
           <OrderHistoryDialog
@@ -311,48 +330,52 @@ const SpiritsPage = () => {
               }));
             }}
           />
-          <Badge variant="destructive" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Deadline: Sunday 12pm
+        </div>
+        <div className="flex items-center space-x-4">
+          <Badge variant="outline" className="flex items-center gap-2 px-4 py-2">
+            <Clock className="h-4 w-4 text-primary" />
+            <span className="font-medium">Deadline: Sunday 12pm</span>
           </Badge>
-          <Badge variant="secondary" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Delivery: Monday 10am-2pm
+          <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
+            <Building className="h-4 w-4 text-primary" />
+            <span className="font-medium">Delivery: Monday 10am-2pm</span>
           </Badge>
         </div>
       </div>
 
       {/* Order Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            Current Order
+      <Card className="border-2 border-primary/10 bg-gradient-to-r from-background to-muted/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <ShoppingCart className="h-5 w-5 text-primary" />
+            Current Order Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <div className="text-2xl font-bold">{totalItems}</div>
-              <p className="text-sm text-muted-foreground">Bottles</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">{totalItems}</div>
+              <p className="text-sm text-muted-foreground font-medium">Items</p>
             </div>
-            <div>
-              <div className="text-2xl font-bold">£{subtotal.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">Subtotal</p>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-foreground">£{subtotal.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground font-medium">Subtotal</p>
             </div>
-            <div>
-              <div className="text-2xl font-bold">£{vatAmount.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">VAT (20%)</p>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-muted-foreground">£{vatAmount.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground font-medium">VAT (20%)</p>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-primary">£{totalWithVAT.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">Total</p>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary">£{totalWithVAT.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground font-medium">Total</p>
             </div>
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-3 mt-6 justify-center">
             <Button 
               disabled={totalItems === 0 || submitting} 
               onClick={handleSubmitOrder}
+              size="lg"
+              className="px-8"
             >
               {submitting ? 'Submitting...' : 'Submit Order'}
             </Button>
@@ -360,6 +383,8 @@ const SpiritsPage = () => {
               variant="outline" 
               disabled={totalItems === 0 || saving}
               onClick={handleSaveDraft}
+              size="lg"
+              className="px-8"
             >
               {saving ? 'Saving...' : 'Save Draft'}
             </Button>
@@ -373,6 +398,8 @@ const SpiritsPage = () => {
                   description: "Order quantities have been cleared.",
                 });
               }}
+              size="lg"
+              className="px-8"
             >
               Clear
             </Button>
@@ -380,15 +407,53 @@ const SpiritsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Inventory */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Spirits & Wine Inventory</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Stock levels shown in bottles (decimals represent partial bottles in tenths)
-          </p>
+      {/* Search and Filters */}
+      <Card className="border-2">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Filter className="h-5 w-5 text-primary" />
+            Search & Filter
+          </CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Inventory */}
+      <Card className="border-2">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl text-foreground">Spirits & Wine Inventory</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Stock levels shown in bottles. Case quantities automatically detected.
+          </p>
+        </CardHeader>
+        <CardContent className="p-0">
           <InventoryTable
             products={transformedProducts}
             showLocations={["bar", "cellar"]}

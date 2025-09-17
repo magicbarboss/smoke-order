@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { AddProductDialog } from "@/components/inventory/AddProductDialog";
@@ -8,20 +8,24 @@ import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Product, StockLocation } from "@/types/inventory";
-import { ShoppingCart, Clock, Building } from "lucide-react";
+import { ShoppingCart, Clock, Building, Search, Filter } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { Toaster } from "@/components/ui/toaster";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function BeveragesPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
   const [stockLevels, setStockLevels] = useState<Record<string, { bar: number; cellar: number }>>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const { user, loading: authLoading } = useAuth();
   const { saveDraft, submitOrder, saving, submitting } = useOrders();
   const { orderHistory, getLastOrderInfo } = useOrderHistory('star-pubs', 7);
@@ -129,6 +133,22 @@ export default function BeveragesPage() {
     }));
   };
 
+  // Get unique categories for filter
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
+    return uniqueCategories.sort();
+  }, [products]);
+
+  // Filter products based on search and category
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.category.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, selectedCategory]);
+
   const totalItems = Object.values(orderQuantities).reduce((sum, qty) => sum + qty, 0);
   const totalCost = products.reduce((sum, product) => {
     const qty = orderQuantities[product.id] || 0;
@@ -194,7 +214,7 @@ export default function BeveragesPage() {
           <AddProductDialog
             supplierId="star-pubs"
             supplierName="Star Pubs & Bars"
-            existingCategories={Array.from(new Set(products.map(p => p.category)))}
+            existingCategories={categories}
             onProductAdded={fetchProducts}
           />
           <ZeroStockDialog
@@ -214,7 +234,7 @@ export default function BeveragesPage() {
               supplier_id: p.supplierId,
             }))}
             supplierName="Star Pubs & Bars"
-            existingCategories={Array.from(new Set(products.map(p => p.category)))}
+            existingCategories={categories}
             onProductsUpdated={fetchProducts}
           />
           <OrderHistoryDialog
@@ -301,6 +321,44 @@ export default function BeveragesPage() {
         </CardContent>
       </Card>
 
+      {/* Search and Filters */}
+      <Card className="border-2">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Filter className="h-5 w-5 text-primary" />
+            Search & Filter
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Inventory */}
       <Card className="border-2">
         <CardHeader className="pb-4">
@@ -311,7 +369,7 @@ export default function BeveragesPage() {
         </CardHeader>
         <CardContent className="p-0">
           <InventoryTable
-            products={products}
+            products={filteredProducts}
             showLocations={["bar", "cellar"]}
             onQuantityChange={handleQuantityChange}
             orderQuantities={orderQuantities}

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,7 +12,8 @@ import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
 import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
 import { suppliers } from "@/data/suppliers";
-import { Settings, History, ShoppingCart, CalendarClock } from "lucide-react";
+import { Settings, History, ShoppingCart, CalendarClock, Search, Filter, Clock, Building } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Product {
   id: string;
@@ -32,6 +34,8 @@ export default function FoodPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const { toast } = useToast();
   const { user } = useAuth();
   const { submitOrder } = useOrders();
@@ -119,13 +123,27 @@ export default function FoodPage() {
     }
   };
 
+  // Get unique categories for filter
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
+    return uniqueCategories.sort();
+  }, [products]);
+
+  // Filter products based on search and category
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.category.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, selectedCategory]);
+
   const hasItems = Object.values(orderQuantities).some(qty => qty > 0);
   const totalCost = Object.entries(orderQuantities).reduce((total, [productId, quantity]) => {
     const product = products.find(p => p.id === productId);
     return total + (product ? quantity * product.current_price : 0);
   }, 0);
-
-  const existingCategories = Array.from(new Set(products.map(p => p.category)));
 
   if (loading) {
     return (
@@ -137,22 +155,11 @@ export default function FoodPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{supplier?.name}</h1>
-          <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <CalendarClock className="h-4 w-4" />
-              Deadline: {supplier?.deadline}
-            </div>
-            <div>Account: {supplier?.account}</div>
-            <div>Delivery: {supplier?.deliveryWindow}</div>
-          </div>
-          <p className="text-muted-foreground mt-1">
-            Food ordering list - Via App by 8pm night before
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">{supplier?.name}</h1>
+          <p className="text-muted-foreground">Food ordering list - Via App by 8pm night before</p>
         </div>
-        
         <div className="flex gap-2">
           <OrderHistoryDialog 
             supplierId="salvo-charles"
@@ -168,7 +175,7 @@ export default function FoodPage() {
           <ProductEditDialog
             products={products}
             supplierName={supplier?.name || "Salvo & Charles"}
-            existingCategories={existingCategories}
+            existingCategories={categories}
             onProductsUpdated={fetchProducts}
             trigger={
               <Button variant="outline" size="sm">
@@ -178,24 +185,75 @@ export default function FoodPage() {
             }
           />
         </div>
+        <div className="flex items-center space-x-4">
+          <Badge variant="outline" className="flex items-center gap-2 px-4 py-2">
+            <Clock className="h-4 w-4 text-primary" />
+            <span className="font-medium">Deadline: {supplier?.deadline}</span>
+          </Badge>
+          <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
+            <Building className="h-4 w-4 text-primary" />
+            <span className="font-medium">Account: {supplier?.account}</span>
+          </Badge>
+        </div>
       </div>
 
+      {/* Search and Filters */}
+      <Card className="border-2">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Filter className="h-5 w-5 text-primary" />
+            Search & Filter
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5" />
+        <Card className="border-2">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl text-foreground flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-primary" />
               Food Products
             </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Track stock levels and place orders. Case quantities automatically detected.
+            </p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <InventoryTable
-              products={products}
+              products={filteredProducts}
               orderQuantities={orderQuantities}
               onQuantityChange={handleQuantityChange}
               showLocations={["holding"]}
               orderHistory={Object.fromEntries(
-                products.map(product => [
+                filteredProducts.map(product => [
                   product.id,
                   getLastOrderInfo(product.id)
                 ])
@@ -205,11 +263,14 @@ export default function FoodPage() {
         </Card>
 
         {hasItems && (
-          <Card className="border-primary">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Order Summary</span>
-                <Badge variant="secondary">
+          <Card className="border-2 border-primary/10 bg-gradient-to-r from-background to-muted/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-foreground">
+                <span className="flex items-center gap-2">
+                  <ShoppingCart className="h-5 w-5 text-primary" />
+                  Order Summary
+                </span>
+                <Badge variant="secondary" className="text-lg px-3 py-1">
                   £{totalCost.toFixed(2)}
                 </Badge>
               </CardTitle>
@@ -223,14 +284,14 @@ export default function FoodPage() {
                     if (!product) return null;
                     
                     return (
-                      <div key={productId} className="flex justify-between text-sm">
-                        <span>{product.name} x {quantity}</span>
-                        <span>£{(quantity * product.current_price).toFixed(2)}</span>
+                      <div key={productId} className="flex justify-between text-sm p-2 rounded-md bg-muted/50">
+                        <span className="font-medium">{product.name} x {quantity}</span>
+                        <span className="text-primary font-semibold">£{(quantity * product.current_price).toFixed(2)}</span>
                       </div>
                     );
                   })}
               </div>
-              <Button onClick={handleCreateOrder} className="w-full">
+              <Button onClick={handleCreateOrder} className="w-full" size="lg">
                 Create Order - £{totalCost.toFixed(2)}
               </Button>
             </CardContent>

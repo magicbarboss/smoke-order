@@ -13,7 +13,8 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
-  const { signIn, signUp, user, resetPassword } = useAuth();
+  const [magicLoading, setMagicLoading] = useState(false);
+  const { signIn, signUp, user, resetPassword, signInWithMagicLink } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -97,6 +98,32 @@ export default function AuthPage() {
     
     setResetLoading(false);
   };
+  const handleMagicLink = async () => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setMagicLoading(true);
+    const { error } = await signInWithMagicLink(email);
+    if (error) {
+      toast({
+        title: "Magic Link Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Login Link Sent",
+        description: "Check your email on this device to sign in.",
+      });
+    }
+    setMagicLoading(false);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -135,6 +162,15 @@ export default function AuthPage() {
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Signing In...' : 'Sign In'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full mt-2"
+                  onClick={handleMagicLink}
+                  disabled={magicLoading}
+                >
+                  {magicLoading ? 'Sending link...' : 'Email me a login link'}
                 </Button>
                 
                 <div className="text-center mt-4">

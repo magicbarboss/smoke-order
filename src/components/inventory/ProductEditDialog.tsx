@@ -62,6 +62,7 @@ export function ProductEditDialog({
   const [showDiscontinued, setShowDiscontinued] = useState(false);
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const [dbIdMap, setDbIdMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -74,11 +75,53 @@ export function ProductEditDialog({
           category: product.category,
           unit: product.unit,
           current_price: product.current_price,
-          reorder_point: product.reorder_point,
+          reorder_point: Math.round(product.reorder_point || 0),
           discontinued: product.discontinued || false,
         };
       });
       setEditingProducts(initialEditingProducts);
+
+      // Prefetch DB IDs for existing products by name + supplier
+      const fetchDbIds = async () => {
+        try {
+          const nonUuid = products.filter(p => !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(p.id));
+          if (nonUuid.length === 0) {
+            setDbIdMap({});
+            return;
+          }
+
+          const names = Array.from(new Set(nonUuid.map(p => p.name)));
+          const supplierIds = Array.from(new Set(nonUuid.map(p => p.supplier_id)));
+
+          const { data, error } = await supabase
+            .from('products')
+            .select('id,name,supplier_id')
+            .in('name', names)
+            .in('supplier_id', supplierIds);
+
+          if (error) {
+            console.warn('Prefetch DB IDs failed:', error.message);
+            return;
+          }
+
+          const byKey = new Map<string, string>();
+          (data || []).forEach((row: any) => {
+            byKey.set(`${row.supplier_id}::${row.name}`, row.id);
+          });
+
+          const map: Record<string, string> = {};
+          nonUuid.forEach(p => {
+            const found = byKey.get(`${p.supplier_id}::${p.name}`);
+            if (found) map[p.id] = found;
+          });
+
+          setDbIdMap(map);
+        } catch (e) {
+          console.warn('Prefetch DB IDs error:', e);
+        }
+      };
+
+      fetchDbIds();
     }
   }, [isOpen, products]);
 
@@ -150,8 +193,10 @@ export function ProductEditDialog({
     try {
       // Update products in database
       for (const product of changedProducts) {
-        if (isUUID(product.id)) {
-          // Product already exists in DB, update it
+        const targetId = isUUID(product.id) ? product.id : dbIdMap[product.id];
+
+        if (targetId) {
+          // Product exists in DB, update it
           const { error } = await supabase
             .from('products')
             .update({
@@ -159,10 +204,10 @@ export function ProductEditDialog({
               category: product.category,
               unit: product.unit,
               current_price: product.current_price,
-              reorder_point: product.reorder_point,
+              reorder_point: Math.round(product.reorder_point || 0),
               discontinued: product.discontinued,
             })
-            .eq('id', product.id);
+            .eq('id', targetId);
 
           if (error) {
             console.error('Database error:', error);
@@ -195,7 +240,7 @@ export function ProductEditDialog({
                 category: product.category,
                 unit: product.unit,
                 current_price: product.current_price,
-                reorder_point: product.reorder_point,
+                reorder_point: Math.round(product.reorder_point || 0),
                 discontinued: product.discontinued,
               })
               .eq('id', existingProducts[0].id);
@@ -213,7 +258,7 @@ export function ProductEditDialog({
                 category: originalProduct.category,
                 unit: originalProduct.unit,
                 current_price: originalProduct.current_price,
-                reorder_point: originalProduct.reorder_point,
+                reorder_point: Math.round(originalProduct.reorder_point || 0),
                 supplier_id: originalProduct.supplier_id,
                 discontinued: false,
               })
@@ -233,7 +278,7 @@ export function ProductEditDialog({
                 category: product.category,
                 unit: product.unit,
                 current_price: product.current_price,
-                reorder_point: product.reorder_point,
+                reorder_point: Math.round(product.reorder_point || 0),
                 discontinued: product.discontinued,
               })
               .eq('id', newProduct.id);
@@ -353,7 +398,7 @@ export function ProductEditDialog({
                   } ${editingProduct.discontinued ? 'opacity-75 bg-muted/30' : ''}`}
                 >
                   <div className="absolute top-2 right-2 flex gap-2">
-                    {!isUUID(product.id) && (
+                    {!isUUID(product.id) && !dbIdMap[product.id] && (
                       <Badge variant="outline" className="text-xs">
                         Not in DB yet
                       </Badge>

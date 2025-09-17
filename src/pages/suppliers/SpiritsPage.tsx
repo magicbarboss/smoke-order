@@ -5,6 +5,7 @@ import { AddProductDialog } from "@/components/inventory/AddProductDialog";
 import { ZeroStockDialog } from "@/components/inventory/ZeroStockDialog";
 import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
 import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
+import { StockCountingDialog } from "@/components/inventory/StockCountingDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -124,6 +125,13 @@ export default function SpiritsPage() {
           <p className="text-muted-foreground">Spirits and wines with new category structure</p>
         </div>
         <div className="flex items-center gap-4">
+          <StockCountingDialog
+            products={filteredProducts}
+            stockLevels={stockLevels}
+            onStockChange={handleStockChange}
+            getCategoryGroup={(category) => category.toUpperCase()}
+            getProductLocations={(category) => ['bar', 'cellar']}
+          />
           <AddProductDialog
             supplierId="st-austell"
             supplierName="St Austell Brewery"

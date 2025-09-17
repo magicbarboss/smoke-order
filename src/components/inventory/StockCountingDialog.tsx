@@ -76,7 +76,7 @@ export function StockCountingDialog({
           Stock Count
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col w-[95vw] sm:w-full">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-primary" />
@@ -120,18 +120,18 @@ export function StockCountingDialog({
           {/* Progress and Search */}
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <Badge variant="outline" className="px-3 py-1">
+                  <Badge variant="outline" className="px-3 py-1 text-xs">
                     {countedProducts.length} / {filteredProducts.length} counted
                   </Badge>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={resetLocation}
-                    className="text-muted-foreground hover:text-destructive"
+                    className="text-muted-foreground hover:text-destructive text-xs sm:text-sm"
                   >
-                    <RotateCcw className="h-4 w-4 mr-1" />
+                    <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                     Reset {selectedLocation}
                   </Button>
                 </div>
@@ -165,23 +165,23 @@ export function StockCountingDialog({
 
                 return (
                   <Card key={product.id} className="border">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between gap-4">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-foreground truncate">
+                          <h4 className="font-medium text-foreground text-sm sm:text-base leading-tight">
                             {product.name}
                           </h4>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="secondary" className="text-xs">
                               {categoryGroup}
                             </Badge>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-xs sm:text-sm text-muted-foreground">
                               {product.unit}
                             </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center gap-2 sm:gap-3">
                           {/* Quick subtract buttons */}
                           <div className="flex gap-1">
                             <Button
@@ -189,7 +189,7 @@ export function StockCountingDialog({
                               size="sm"
                               onClick={() => handleQuickAdd(product.id, -10)}
                               disabled={currentStock < 10}
-                              className="h-8 w-8 p-0"
+                              className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-xs"
                             >
                               -10
                             </Button>
@@ -198,9 +198,9 @@ export function StockCountingDialog({
                               size="sm"
                               onClick={() => handleQuickAdd(product.id, -1)}
                               disabled={currentStock < 1}
-                              className="h-8 w-8 p-0"
+                              className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                             >
-                              <Minus className="h-3 w-3" />
+                              <Minus className="h-2 w-2 sm:h-3 sm:w-3" />
                             </Button>
                           </div>
 
@@ -213,12 +213,12 @@ export function StockCountingDialog({
                                 const value = parseFloat(e.target.value) || 0;
                                 handleStockUpdate(product.id, value);
                               }}
-                              className="w-16 md:w-20 text-center text-sm md:text-lg font-bold"
+                              className="w-14 sm:w-16 md:w-20 text-center text-sm sm:text-base md:text-lg font-bold"
                               step={isDecimal ? "0.1" : "1"}
                               min="0"
                             />
                             <p className="text-xs text-muted-foreground mt-1">
-                              Current Stock
+                              Stock
                             </p>
                           </div>
 
@@ -228,15 +228,15 @@ export function StockCountingDialog({
                               variant="outline"
                               size="sm"
                               onClick={() => handleQuickAdd(product.id, 1)}
-                              className="h-8 w-8 p-0"
+                              className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                             >
-                              <Plus className="h-3 w-3" />
+                              <Plus className="h-2 w-2 sm:h-3 sm:w-3" />
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleQuickAdd(product.id, 10)}
-                              className="h-8 w-8 p-0"
+                              className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-xs"
                             >
                               +10
                             </Button>

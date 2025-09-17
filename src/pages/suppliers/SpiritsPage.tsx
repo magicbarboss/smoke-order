@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { AddProductDialog } from "@/components/inventory/AddProductDialog";
@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Product } from "@/types/inventory";
 import { ShoppingCart, Clock, Building, Search, Filter } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,18 +20,162 @@ import { Toaster } from "@/components/ui/toaster";
 import { stAustellProducts } from "@/data/st-austell-products";
 import { toast } from "@/hooks/use-toast";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
+import { useStockLevels } from "@/hooks/useStockLevels";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function SpiritsPage() {
-  const [products] = useState<Product[]>(stAustellProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [showDiscontinued, setShowDiscontinued] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
-  const [stockLevels, setStockLevels] = useState<Record<string, { bar: number; cellar: number }>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const { user, loading: authLoading } = useAuth();
   const { saveDraft, submitOrder, saving, submitting } = useOrders();
   const { orderHistory, getLastOrderInfo } = useOrderHistory('st-austell', 7);
   const navigate = useNavigate();
+  
+  // Get product IDs for stock levels
+  const productIds = products.map(p => p.id);
+  const { stockLevels, updateStock } = useStockLevels(productIds);
+
+  // Fetch products from Supabase and auto-import if needed
+  const fetchProducts = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, category, unit, current_price, reorder_point, supplier_id, discontinued, product_code')
+        .eq('supplier_id', 'st-austell')
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load products from database",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        // Auto-import static products if DB is empty
+        console.log('No products found, importing static data...');
+        await importStaticProducts();
+        return;
+      }
+
+      // Convert DB products to Product format
+      const dbProducts: Product[] = data.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        unit: p.unit,
+        costPerUnit: p.current_price,
+        stock: { bar: 0, cellar: 0 }, // Will be populated by useStockLevels
+        reorderPoint: p.reorder_point || 0,
+        supplierId: p.supplier_id,
+        discontinued: p.discontinued,
+      }));
+
+      setProducts(dbProducts);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load products",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Import static products with product_codes
+  const importStaticProducts = async () => {
+    try {
+      const productsToInsert = stAustellProducts.map(p => ({
+        name: p.name,
+        category: p.category,
+        unit: p.unit,
+        current_price: p.costPerUnit,
+        reorder_point: Math.round(p.reorderPoint || 0),
+        supplier_id: p.supplierId,
+        product_code: p.id, // Use static id as product_code
+        discontinued: false,
+      }));
+
+      const { error } = await supabase
+        .from('products')
+        .insert(productsToInsert);
+
+      if (error) {
+        console.error('Error importing products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to import products to database",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Import initial stock levels
+      const { data: insertedProducts } = await supabase
+        .from('products')
+        .select('id, product_code')
+        .eq('supplier_id', 'st-austell');
+
+      if (insertedProducts) {
+        const stockLevelsToInsert: any[] = [];
+        
+        insertedProducts.forEach(dbProduct => {
+          const staticProduct = stAustellProducts.find(p => p.id === dbProduct.product_code);
+          if (staticProduct) {
+            stockLevelsToInsert.push(
+              {
+                product_id: dbProduct.id,
+                location: 'bar',
+                quantity: staticProduct.stock.bar,
+              },
+              {
+                product_id: dbProduct.id,
+                location: 'cellar', 
+                quantity: staticProduct.stock.cellar,
+              }
+            );
+          }
+        });
+
+        if (stockLevelsToInsert.length > 0) {
+          await supabase.from('stock_levels').insert(stockLevelsToInsert);
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: "Products imported successfully",
+      });
+
+      // Refetch products
+      await fetchProducts();
+    } catch (error) {
+      console.error('Error importing products:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to import products",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (user && !authLoading) {
+      fetchProducts();
+    }
+  }, [user, authLoading]);
 
   // Redirect to auth if not logged in
   if (!authLoading && !user) {
@@ -44,13 +190,7 @@ export default function SpiritsPage() {
   };
 
   const handleStockChange = (productId: string, location: string, quantity: number) => {
-    setStockLevels(prev => ({
-      ...prev,
-      [productId]: {
-        ...prev[productId],
-        [location]: quantity
-      }
-    }));
+    updateStock(productId, location as 'bar' | 'cellar', quantity);
   };
 
   // Get unique categories for filter
@@ -59,15 +199,16 @@ export default function SpiritsPage() {
     return uniqueCategories.sort();
   }, [products]);
 
-  // Filter products based on search and category
+  // Filter products based on search, category, and discontinued status
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.category.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesDiscontinued = showDiscontinued || !product.discontinued;
+      return matchesSearch && matchesCategory && matchesDiscontinued;
     });
-  }, [products, searchTerm, selectedCategory]);
+  }, [products, searchTerm, selectedCategory, showDiscontinued]);
 
   const totalItems = Object.values(orderQuantities).reduce((sum, qty) => sum + qty, 0);
   const totalCost = products.reduce((sum, product) => {
@@ -113,7 +254,7 @@ export default function SpiritsPage() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
@@ -127,7 +268,12 @@ export default function SpiritsPage() {
         <div className="flex items-center gap-4">
           <StockCountingDialog
             products={filteredProducts}
-            stockLevels={stockLevels}
+            stockLevels={Object.fromEntries(
+              Object.entries(stockLevels).map(([id, levels]) => [
+                id,
+                { bar: levels.bar || 0, cellar: levels.cellar || 0 }
+              ])
+            )}
             onStockChange={handleStockChange}
             getCategoryGroup={(category) => category.toUpperCase()}
             getProductLocations={(category) => ['bar', 'cellar']}
@@ -153,10 +299,11 @@ export default function SpiritsPage() {
               current_price: p.costPerUnit,
               reorder_point: p.reorderPoint,
               supplier_id: p.supplierId,
+              discontinued: p.discontinued,
             }))}
             supplierName="St Austell Brewery"
             existingCategories={categories}
-            onProductsUpdated={() => {}}
+            onProductsUpdated={fetchProducts}
           />
           <OrderHistoryDialog
             supplierId="st-austell"
@@ -248,7 +395,7 @@ export default function SpiritsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-end">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -273,6 +420,16 @@ export default function SpiritsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-discontinued"
+                checked={showDiscontinued}
+                onCheckedChange={setShowDiscontinued}
+              />
+              <Label htmlFor="show-discontinued" className="text-sm">
+                Show discontinued
+              </Label>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -292,7 +449,12 @@ export default function SpiritsPage() {
             onQuantityChange={handleQuantityChange}
             orderQuantities={orderQuantities}
             onStockChange={handleStockChange}
-            stockLevels={stockLevels}
+            stockLevels={Object.fromEntries(
+              Object.entries(stockLevels).map(([id, levels]) => [
+                id,
+                { bar: levels.bar || 0, cellar: levels.cellar || 0 }
+              ])
+            )}
             orderHistory={Object.fromEntries(
               Object.entries(orderHistory).map(([productId, items]) => [
                 productId,

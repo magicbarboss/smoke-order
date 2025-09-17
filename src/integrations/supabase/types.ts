@@ -146,6 +146,7 @@ export type Database = {
           discontinued_by: string | null
           id: string
           name: string
+          product_code: string | null
           reorder_point: number | null
           supplier_id: string
           unit: string
@@ -160,6 +161,7 @@ export type Database = {
           discontinued_by?: string | null
           id?: string
           name: string
+          product_code?: string | null
           reorder_point?: number | null
           supplier_id: string
           unit: string
@@ -174,6 +176,7 @@ export type Database = {
           discontinued_by?: string | null
           id?: string
           name?: string
+          product_code?: string | null
           reorder_point?: number | null
           supplier_id?: string
           unit?: string

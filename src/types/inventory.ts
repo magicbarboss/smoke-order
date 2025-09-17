@@ -14,6 +14,7 @@ export interface Product {
   stock: StockLocation;
   reorderPoint: number;
   supplierId: string;
+  discontinued?: boolean;
 }
 
 export interface Supplier {

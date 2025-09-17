@@ -81,7 +81,7 @@ export function ProductEditDialog({
       });
       setEditingProducts(initialEditingProducts);
 
-      // Prefetch DB IDs for existing products by name + supplier
+      // Prefetch DB IDs for existing products by product_code + supplier
       const fetchDbIds = async () => {
         try {
           const nonUuid = products.filter(p => !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(p.id));
@@ -90,13 +90,13 @@ export function ProductEditDialog({
             return;
           }
 
-          const names = Array.from(new Set(nonUuid.map(p => p.name)));
+          const productCodes = Array.from(new Set(nonUuid.map(p => p.id))); // Use static id as product_code
           const supplierIds = Array.from(new Set(nonUuid.map(p => p.supplier_id)));
 
           const { data, error } = await supabase
             .from('products')
-            .select('id,name,supplier_id')
-            .in('name', names)
+            .select('id,product_code,supplier_id')
+            .in('product_code', productCodes)
             .in('supplier_id', supplierIds);
 
           if (error) {
@@ -106,12 +106,12 @@ export function ProductEditDialog({
 
           const byKey = new Map<string, string>();
           (data || []).forEach((row: any) => {
-            byKey.set(`${row.supplier_id}::${row.name}`, row.id);
+            byKey.set(`${row.supplier_id}::${row.product_code}`, row.id);
           });
 
           const map: Record<string, string> = {};
           nonUuid.forEach(p => {
-            const found = byKey.get(`${p.supplier_id}::${p.name}`);
+            const found = byKey.get(`${p.supplier_id}::${p.id}`); // Use static id as product_code
             if (found) map[p.id] = found;
           });
 
@@ -218,12 +218,12 @@ export function ProductEditDialog({
           const originalProduct = products.find(p => p.id === product.id);
           if (!originalProduct) continue;
 
-          // Try to find existing product by supplier_id and name
+          // Try to find existing product by supplier_id and product_code
           const { data: existingProducts, error: findError } = await supabase
             .from('products')
             .select('id')
             .eq('supplier_id', originalProduct.supplier_id)
-            .eq('name', originalProduct.name)
+            .eq('product_code', originalProduct.id) // Use static id as product_code
             .limit(1);
 
           if (findError) {
@@ -250,7 +250,7 @@ export function ProductEditDialog({
               throw new Error(`Failed to update ${product.name}: ${error.message}`);
             }
           } else {
-            // Product doesn't exist, create it first then update
+            // Product doesn't exist, create it with product_code first then update
             const { data: newProduct, error: insertError } = await supabase
               .from('products')
               .insert({
@@ -260,6 +260,7 @@ export function ProductEditDialog({
                 current_price: originalProduct.current_price,
                 reorder_point: Math.round(originalProduct.reorder_point || 0),
                 supplier_id: originalProduct.supplier_id,
+                product_code: originalProduct.id, // Use static id as product_code
                 discontinued: false,
               })
               .select('id')

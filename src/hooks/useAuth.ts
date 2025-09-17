@@ -17,11 +17,24 @@ export function useAuth() {
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    // Check for existing session first
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } else {
+        // Auto-login with the fixed email - no password needed
+        const { error } = await supabase.auth.signInWithPassword({
+          email: 'magicbarboss@gmail.com',
+          password: 'smoke101'
+        });
+        if (!error) {
+          // Session will be set by the auth state listener
+        } else {
+          setLoading(false);
+        }
+      }
     });
 
     return () => subscription.unsubscribe();

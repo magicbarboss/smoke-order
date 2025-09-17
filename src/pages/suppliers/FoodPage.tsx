@@ -164,8 +164,8 @@ export default function FoodPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">{supplier?.name}</h1>
-          <p className="text-muted-foreground">Food ordering list - Via App by 8pm night before</p>
+          <h1 className="text-xl md:text-3xl font-bold text-foreground">{supplier?.name}</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Food ordering list - Via App by 8pm night before</p>
         </div>
         <div className="flex gap-2">
           <StockCountingDialog
@@ -258,7 +258,7 @@ export default function FoodPage() {
       <div className="grid gap-6">
         <Card className="border-2">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl text-foreground flex items-center gap-2">
+            <CardTitle className="text-lg md:text-xl text-foreground flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-primary" />
               Food Products
             </CardTitle>

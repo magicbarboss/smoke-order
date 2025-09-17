@@ -93,7 +93,7 @@ export function StockCountingDialog({
           {/* Location Selection */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Location Selection</CardTitle>
+              <CardTitle className="text-base md:text-lg">Location Selection</CardTitle>
             </CardHeader>
             <CardContent>
               <RadioGroup 
@@ -103,13 +103,13 @@ export function StockCountingDialog({
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="cellar" id="cellar" />
-                  <Label htmlFor="cellar" className="text-lg font-medium cursor-pointer">
+                  <Label htmlFor="cellar" className="text-sm md:text-lg font-medium cursor-pointer">
                     Cellar
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="bar" id="bar" />
-                  <Label htmlFor="bar" className="text-lg font-medium cursor-pointer">
+                  <Label htmlFor="bar" className="text-sm md:text-lg font-medium cursor-pointer">
                     Bar
                   </Label>
                 </div>
@@ -153,7 +153,7 @@ export function StockCountingDialog({
           {/* Product List */}
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="pb-3">
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-base md:text-lg font-semibold">
                 Products in {selectedLocation} ({filteredProducts.length})
               </h3>
             </div>
@@ -213,7 +213,7 @@ export function StockCountingDialog({
                                 const value = parseFloat(e.target.value) || 0;
                                 handleStockUpdate(product.id, value);
                               }}
-                              className="w-20 text-center text-lg font-bold"
+                              className="w-16 md:w-20 text-center text-sm md:text-lg font-bold"
                               step={isDecimal ? "0.1" : "1"}
                               min="0"
                             />

@@ -200,8 +200,8 @@ export default function BeveragesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Star Pubs-Heineken</h1>
-          <p className="text-muted-foreground">Bottled beers, ciders, ales, and minerals</p>
+          <h1 className="text-xl md:text-3xl font-bold text-foreground">Star Pubs-Heineken</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Bottled beers, ciders, ales, and minerals</p>
         </div>
         <div className="flex items-center gap-4">
           <StockCountingDialog
@@ -273,20 +273,20 @@ export default function BeveragesPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary">{totalItems}</div>
-              <p className="text-sm text-muted-foreground font-medium">Items</p>
+              <div className="text-2xl md:text-3xl font-bold text-primary">{totalItems}</div>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">Items</p>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-foreground">£{totalCost.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground font-medium">Subtotal</p>
+              <div className="text-2xl md:text-3xl font-bold text-foreground">£{totalCost.toFixed(2)}</div>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">Subtotal</p>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-muted-foreground">£{vatAmount.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground font-medium">VAT (20%)</p>
+              <div className="text-2xl md:text-3xl font-bold text-muted-foreground">£{vatAmount.toFixed(2)}</div>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">VAT (20%)</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-primary">£{totalWithVAT.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground font-medium">Total</p>
+              <div className="text-2xl md:text-4xl font-bold text-primary">£{totalWithVAT.toFixed(2)}</div>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">Total</p>
             </div>
           </div>
           <div className="flex gap-3 mt-6 justify-center">
@@ -364,7 +364,7 @@ export default function BeveragesPage() {
       {/* Inventory */}
       <Card className="border-2">
         <CardHeader className="pb-4">
-          <CardTitle className="text-xl text-foreground">Beverages Inventory</CardTitle>
+          <CardTitle className="text-lg md:text-xl text-foreground">Beverages Inventory</CardTitle>
           <p className="text-sm text-muted-foreground">
             Bottled beers, ciders, ales, and minerals. Pack quantities automatically detected.
           </p>

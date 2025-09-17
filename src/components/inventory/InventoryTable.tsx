@@ -150,23 +150,23 @@ export function InventoryTable({
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>Category</TableHead>
-            {showLocations.includes("bar") && <TableHead className="text-center">Bar Stock</TableHead>}
-            {showLocations.includes("cellar") && <TableHead className="text-center">Cellar Stock</TableHead>}
-            {showLocations.includes("holding") && <TableHead className="text-center">Holding</TableHead>}
-            {showLocations.includes("comingMon") && <TableHead className="text-center">Coming Mon</TableHead>}
-            <TableHead className="text-center">Total Stock</TableHead>
-            <TableHead className="text-center">Stock Level</TableHead>
-            <TableHead>Unit Cost & Info</TableHead>
-            <TableHead>Reorder Point</TableHead>
-            <TableHead>Last Ordered</TableHead>
-            <TableHead>Order Qty</TableHead>
-            <TableHead>Cost</TableHead>
+            <TableHead className="text-xs md:text-sm">Product</TableHead>
+            <TableHead className="text-xs md:text-sm hidden md:table-cell">Category</TableHead>
+            {showLocations.includes("bar") && <TableHead className="text-center text-xs md:text-sm">Bar</TableHead>}
+            {showLocations.includes("cellar") && <TableHead className="text-center text-xs md:text-sm">Cellar</TableHead>}
+            {showLocations.includes("holding") && <TableHead className="text-center text-xs md:text-sm hidden lg:table-cell">Holding</TableHead>}
+            {showLocations.includes("comingMon") && <TableHead className="text-center text-xs md:text-sm hidden lg:table-cell">Coming Mon</TableHead>}
+            <TableHead className="text-center text-xs md:text-sm">Stock</TableHead>
+            <TableHead className="text-center text-xs md:text-sm hidden md:table-cell">Level</TableHead>
+            <TableHead className="text-xs md:text-sm hidden md:table-cell">Unit Cost</TableHead>
+            <TableHead className="text-xs md:text-sm hidden lg:table-cell">Reorder</TableHead>
+            <TableHead className="text-xs md:text-sm hidden lg:table-cell">Last Ordered</TableHead>
+            <TableHead className="text-xs md:text-sm">Order</TableHead>
+            <TableHead className="text-xs md:text-sm">Cost</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -193,13 +193,13 @@ export function InventoryTable({
                   "hover:bg-table-row-hover transition-colors"
                 )}
               >
-                <TableCell className="font-medium">
+                <TableCell className="font-medium text-xs md:text-sm">
                   <div className="flex items-center gap-2">
-                    {product.name}
+                    <span className="truncate max-w-[120px] md:max-w-none">{product.name}</span>
                     {isSaving && <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />}
                   </div>
                 </TableCell>
-                <TableCell>{product.category}</TableCell>
+                <TableCell className="hidden md:table-cell text-xs md:text-sm">{product.category}</TableCell>
                 {productLocations.includes("bar") && (
                   <TableCell>
                     {onStockChange ? (
@@ -227,7 +227,7 @@ export function InventoryTable({
                               : parseInt(e.target.value) || 0;
                             onStockChange(product.id, "bar", Math.max(0, value));
                           }}
-                          className="w-20 text-center"
+                          className="w-16 md:w-20 text-center text-sm md:text-base"
                           min="0"
                           step={getStockStep(product)}
                         />
@@ -277,7 +277,7 @@ export function InventoryTable({
                               : parseInt(e.target.value) || 0;
                             onStockChange(product.id, "cellar", Math.max(0, value));
                           }}
-                          className="w-20 text-center"
+                          className="w-16 md:w-20 text-center text-sm md:text-base"
                           min="0"
                           step={getStockStep(product)}
                         />
@@ -304,7 +304,7 @@ export function InventoryTable({
                 {productLocations.includes("comingMon") && <TableCell>{product.stock.comingMon || 0}</TableCell>}
                 <TableCell className="text-center font-medium">
                   <div className="space-y-1">
-                    <div className={cn("text-lg font-bold",
+                    <div className={cn("text-sm md:text-lg font-bold",
                       stockLevel === "low" && "text-stock-low",
                       stockLevel === "medium" && "text-stock-medium", 
                       stockLevel === "high" && "text-stock-high"
@@ -325,10 +325,10 @@ export function InventoryTable({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center hidden md:table-cell">
                   <Badge 
                     variant="outline"
-                    className={cn("font-medium border-2", getStockBadgeColor(stockLevel))}
+                    className={cn("font-medium border-2 text-xs", getStockBadgeColor(stockLevel))}
                   >
                     <div className="flex items-center gap-1">
                       <div className={cn("w-2 h-2 rounded-full",
@@ -336,18 +336,18 @@ export function InventoryTable({
                         stockLevel === "medium" && "bg-stock-medium", 
                         stockLevel === "high" && "bg-stock-high"
                       )} />
-                      {stockLevel.toUpperCase()}
+                      <span className="hidden md:inline">{stockLevel.toUpperCase()}</span>
                     </div>
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                   <div className="space-y-1">
-                    <div className="font-medium">£{product.costPerUnit.toFixed(2)}</div>
+                    <div className="font-medium text-xs md:text-sm">£{product.costPerUnit.toFixed(2)}</div>
                     <div className="text-xs text-muted-foreground">{product.unit}</div>
                   </div>
                 </TableCell>
-                <TableCell>{product.reorderPoint}</TableCell>
-                <TableCell>
+                <TableCell className="hidden lg:table-cell text-xs md:text-sm">{product.reorderPoint}</TableCell>
+                <TableCell className="hidden lg:table-cell">
                   {orderHistory?.[product.id] ? (
                     <div className="text-xs">
                       <div className="font-medium">

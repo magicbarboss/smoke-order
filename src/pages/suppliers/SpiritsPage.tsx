@@ -251,8 +251,8 @@ export default function SpiritsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">St Austell Brewery</h1>
-          <p className="text-muted-foreground">Spirits and wines with new category structure</p>
+          <h1 className="text-xl md:text-3xl font-bold text-foreground">St Austell Brewery</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Spirits and wines with new category structure</p>
         </div>
         <div className="flex items-center gap-4">
           <StockCountingDialog
@@ -328,20 +328,20 @@ export default function SpiritsPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary">{totalItems}</div>
-              <p className="text-sm text-muted-foreground font-medium">Items</p>
+              <div className="text-2xl md:text-3xl font-bold text-primary">{totalItems}</div>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">Items</p>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-foreground">£{totalCost.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground font-medium">Subtotal</p>
+              <div className="text-2xl md:text-3xl font-bold text-foreground">£{totalCost.toFixed(2)}</div>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">Subtotal</p>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-muted-foreground">£{vatAmount.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground font-medium">VAT (20%)</p>
+              <div className="text-2xl md:text-3xl font-bold text-muted-foreground">£{vatAmount.toFixed(2)}</div>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">VAT (20%)</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-primary">£{totalWithVAT.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground font-medium">Total</p>
+              <div className="text-2xl md:text-4xl font-bold text-primary">£{totalWithVAT.toFixed(2)}</div>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">Total</p>
             </div>
           </div>
           <div className="flex gap-3 mt-6 justify-center">
@@ -426,7 +426,7 @@ export default function SpiritsPage() {
       {/* Inventory */}
       <Card className="border-2">
         <CardHeader className="pb-4">
-          <CardTitle className="text-xl text-foreground">Spirits & Wines Inventory</CardTitle>
+          <CardTitle className="text-lg md:text-xl text-foreground">Spirits & Wines Inventory</CardTitle>
           <p className="text-sm text-muted-foreground">
             Spirits (25ml measures) and wines. Bottle quantities automatically detected.
           </p>

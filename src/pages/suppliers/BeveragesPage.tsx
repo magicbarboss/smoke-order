@@ -5,6 +5,7 @@ import { AddProductDialog } from "@/components/inventory/AddProductDialog";
 import { ZeroStockDialog } from "@/components/inventory/ZeroStockDialog";
 import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
 import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
+import { StockCountingDialog } from "@/components/inventory/StockCountingDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -207,6 +208,14 @@ export default function BeveragesPage() {
           <p className="text-muted-foreground">Bottled beers, ciders, ales, and minerals</p>
         </div>
         <div className="flex items-center gap-4">
+          <StockCountingDialog
+            products={products}
+            stockLevels={stockLevels}
+            onStockChange={handleStockChange}
+            getCategoryGroup={getCategoryGroup}
+            getProductLocations={getProductLocations}
+            isSaving={isSaving}
+          />
           <AddProductDialog
             supplierId="star-pubs"
             supplierName="Star Pubs & Bars"

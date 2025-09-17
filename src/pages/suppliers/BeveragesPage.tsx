@@ -14,14 +14,14 @@ import { ShoppingCart, Clock, Building, Search, Filter } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { Toaster } from "@/components/ui/toaster";
-import { supabase } from "@/integrations/supabase/client";
+import { starPubsProducts } from "@/data/star-pubs-products";
 import { toast } from "@/hooks/use-toast";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function BeveragesPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(starPubsProducts);
+  const [loading, setLoading] = useState(false);
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
   const [stockLevels, setStockLevels] = useState<Record<string, { bar: number; cellar: number }>>({});
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,83 +38,8 @@ export default function BeveragesPage() {
     }
   }, [user, authLoading, navigate]);
 
-  // Fetch products from database
-  useEffect(() => {
-    if (user) {
-      fetchProducts();
-    }
-  }, [user]);
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      // Fetch products for Star Pubs supplier only
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*')
-        .eq('supplier_id', 'star-pubs')
-        .order('category', { ascending: true });
-
-      if (productsError) {
-        console.error('Error fetching products:', productsError);
-        toast({
-          title: "Error",
-          description: "Failed to load products",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Fetch stock levels
-      const { data: stockData, error: stockError } = await supabase
-        .from('stock_levels')
-        .select('*');
-
-      if (stockError) {
-        console.error('Error fetching stock levels:', stockError);
-        toast({
-          title: "Error", 
-          description: "Failed to load stock levels",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Transform data to match Product interface
-      const transformedProducts: Product[] = productsData.map(product => {
-        // Find stock levels for this product
-        const productStocks = stockData.filter(stock => stock.product_id === product.id);
-        
-        const stock: StockLocation = {
-          bar: productStocks.find(s => s.location === 'bar')?.quantity || 0,
-          cellar: productStocks.find(s => s.location === 'cellar')?.quantity || 0,
-          holding: productStocks.find(s => s.location === 'holding')?.quantity || 0,
-        };
-
-        return {
-          id: product.id,
-          name: product.name,
-          category: product.category,
-          unit: product.unit,
-          costPerUnit: Number(product.current_price),
-          stock,
-          reorderPoint: product.reorder_point || 0,
-          supplierId: product.supplier_id,
-        };
-      });
-
-      setProducts(transformedProducts);
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // No need to fetch products as they're loaded from data file
+  // Remove the fetchProducts function and database fetch logic
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setOrderQuantities(prev => ({
@@ -199,7 +124,7 @@ export default function BeveragesPage() {
     }
   };
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
@@ -207,21 +132,21 @@ export default function BeveragesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Star Pubs & Bars</h1>
-          <p className="text-muted-foreground">Premium beverages and bar supplies</p>
+          <h1 className="text-3xl font-bold text-foreground">Star Pubs-Heineken</h1>
+          <p className="text-muted-foreground">Bottled beers, ciders, ales, and minerals</p>
         </div>
         <div className="flex items-center gap-4">
           <AddProductDialog
             supplierId="star-pubs"
             supplierName="Star Pubs & Bars"
             existingCategories={categories}
-            onProductAdded={fetchProducts}
+            onProductAdded={() => {}}
           />
           <ZeroStockDialog
             supplierId="star-pubs"
             supplierName="Star Pubs & Bars"
             productCount={products.length}
-            onComplete={fetchProducts}
+            onComplete={() => {}}
           />
           <ProductEditDialog
             products={products.map(p => ({
@@ -235,7 +160,7 @@ export default function BeveragesPage() {
             }))}
             supplierName="Star Pubs & Bars"
             existingCategories={categories}
-            onProductsUpdated={fetchProducts}
+            onProductsUpdated={() => {}}
           />
           <OrderHistoryDialog
             supplierId="star-pubs"
@@ -364,12 +289,12 @@ export default function BeveragesPage() {
         <CardHeader className="pb-4">
           <CardTitle className="text-xl text-foreground">Beverages Inventory</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Track stock levels and place orders. Case quantities automatically detected.
+            Bottled beers, ciders, ales, and minerals. Pack quantities automatically detected.
           </p>
         </CardHeader>
         <CardContent className="p-0">
           <InventoryTable
-            products={filteredProducts}
+    products={filteredProducts}
             showLocations={["bar", "cellar"]}
             onQuantityChange={handleQuantityChange}
             orderQuantities={orderQuantities}

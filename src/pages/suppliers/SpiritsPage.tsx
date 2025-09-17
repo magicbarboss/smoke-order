@@ -11,7 +11,7 @@ import { AddProductDialog } from "@/components/inventory/AddProductDialog";
 import { ZeroStockDialog } from "@/components/inventory/ZeroStockDialog";
 import { useOrders } from "@/hooks/useOrders";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { stAustellProducts } from "@/data/st-austell-products";
 import { Navigate } from "react-router-dom";
 import { Settings, ShoppingCart, Clock, Building, Search, Filter } from "lucide-react";
 import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
@@ -40,7 +40,7 @@ const SpiritsPage = () => {
   const { orderHistory, getLastOrderInfo } = useOrderHistory('st-austell', 7);
   const { toast } = useToast();
   
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products] = useState<Product[]>(stAustellProducts);
   const [stockLevels, setStockLevels] = useState<Record<string, StockLevel[]>>({});
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -306,19 +306,19 @@ const SpiritsPage = () => {
             supplierId="st-austell"
             supplierName="St Austell Brewery"
             existingCategories={categories}
-            onProductAdded={fetchProducts}
+            onProductAdded={() => {}}
           />
           <ZeroStockDialog
             supplierId="st-austell"
             supplierName="St Austell Brewery"
             productCount={products.length}
-            onComplete={fetchProducts}
+            onComplete={() => {}}
           />
           <ProductEditDialog
             products={products}
             supplierName="St Austell Brewery"
             existingCategories={categories}
-            onProductsUpdated={fetchProducts}
+            onProductsUpdated={() => {}}
           />
           <OrderHistoryDialog
             supplierId="st-austell"

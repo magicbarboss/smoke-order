@@ -25,7 +25,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "jack-honey",
     name: "Jack Daniel's Honey",
-    category: "SPIRITS - WHISKIES",
+    category: "Whiskey",
     unit: "bottle",
     costPerUnit: 22.49,
     stock: { bar: 0.2, cellar: 1.1, holding: 0 },
@@ -35,7 +35,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "johnnie-walker-black",
     name: "Johnnie Walker Black",
-    category: "SPIRITS - WHISKIES",
+    category: "Whiskey",
     unit: "bottle",
     costPerUnit: 19.99,
     stock: { bar: 0.7, cellar: 1.3, holding: 0 },
@@ -45,7 +45,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "haig-club",
     name: "Haig Club",
-    category: "SPIRITS - WHISKIES",
+    category: "Whiskey",
     unit: "bottle",
     costPerUnit: 27.09,
     stock: { bar: 0.1, cellar: 0.4, holding: 0 },
@@ -55,7 +55,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "bushmills",
     name: "Bushmills",
-    category: "SPIRITS - WHISKIES",
+    category: "Whiskey",
     unit: "bottle",
     costPerUnit: 21.39,
     stock: { bar: 0.6, cellar: 0.9, holding: 0 },
@@ -65,7 +65,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "glenmorangie",
     name: "Glenmorangie",
-    category: "SPIRITS - WHISKIES",
+    category: "Whiskey",
     unit: "bottle",
     costPerUnit: 39.09,
     stock: { bar: 0.2, cellar: 0.3, holding: 0 },
@@ -75,7 +75,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "grouse",
     name: "Grouse",
-    category: "SPIRITS - WHISKIES",
+    category: "Whiskey",
     unit: "bottle",
     costPerUnit: 15.29,
     stock: { bar: 0.8, cellar: 1.4, holding: 0 },
@@ -85,7 +85,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "jack-daniels",
     name: "Jack Daniels",
-    category: "SPIRITS - WHISKIES",
+    category: "Whiskey",
     unit: "bottle",
     costPerUnit: 21.79,
     stock: { bar: 0.4, cellar: 1.6, holding: 0 },
@@ -95,7 +95,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "southern-comfort",
     name: "Southern Comfort",
-    category: "SPIRITS - WHISKIES",
+    category: "Whiskey",
     unit: "bottle",
     costPerUnit: 23.19,
     stock: { bar: 0.3, cellar: 0.7, holding: 0 },
@@ -103,7 +103,7 @@ export const stAustellProducts: Product[] = [
     supplierId: "st-austell"
   },
 
-  // SPIRITS - GIN
+  // GIN
   {
     id: "tanqueray",
     name: "Tanqueray",
@@ -117,7 +117,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "tanq-savilla",
     name: "Tanq Savilla",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 26.19,
     stock: { bar: 0.3, cellar: 0.8, holding: 0 },
@@ -127,7 +127,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "tanq-savilla-0",
     name: "Tanq Savilla 0%",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 14.99,
     stock: { bar: 0.2, cellar: 0.6, holding: 0 },
@@ -137,7 +137,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "tanqueray-0",
     name: "Tanqueray 0%",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 16.65,
     stock: { bar: 0.1, cellar: 0.4, holding: 0 },
@@ -147,7 +147,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "gordons-pink",
     name: "Gordons Pink",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 15.49,
     stock: { bar: 0.7, cellar: 1.3, holding: 0 },
@@ -157,7 +157,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "whitley-gin-rhub-ging",
     name: "Whitley Gin Rhub & Ging",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 21.99,
     stock: { bar: 0.2, cellar: 0.5, holding: 0 },
@@ -167,7 +167,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "whitley-gin-raspberry",
     name: "Whitley Gin Raspberry",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 21.99,
     stock: { bar: 0.3, cellar: 0.6, holding: 0 },
@@ -177,7 +177,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "whitley-gin-orange",
     name: "Whitley Gin Orange",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 20.99,
     stock: { bar: 0.1, cellar: 0.4, holding: 0 },
@@ -187,7 +187,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "bombay-gin",
     name: "Bombay Gin",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 20.29,
     stock: { bar: 0.6, cellar: 1.1, holding: 0 },
@@ -197,7 +197,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "hendricks-gin",
     name: "Hendricks Gin",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 29.39,
     stock: { bar: 0.4, cellar: 0.7, holding: 0 },
@@ -207,7 +207,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "77-dark-fruits",
     name: "77 Dark Fruits",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 17.99,
     stock: { bar: 0.8, cellar: 1.5, holding: 0 },
@@ -217,7 +217,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "77-passionfruit",
     name: "77 Passionfruit",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 17.99,
     stock: { bar: 0.5, cellar: 1.2, holding: 0 },
@@ -227,7 +227,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "77-peach",
     name: "77 Peach",
-    category: "SPIRITS - GIN",
+    category: "Gin",
     unit: "bottle",
     costPerUnit: 17.99,
     stock: { bar: 0.3, cellar: 0.9, holding: 0 },
@@ -235,7 +235,7 @@ export const stAustellProducts: Product[] = [
     supplierId: "st-austell"
   },
 
-  // SPIRITS - RUMS
+  // RUM
   {
     id: "dmf-finger-spiced-rum",
     name: "DMF Finger Spiced Rum",
@@ -249,7 +249,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "dmf-cherry",
     name: "DMF Cherry",
-    category: "SPIRITS - RUMS",
+    category: "Rum",
     unit: "bottle",
     costPerUnit: 18.09,
     stock: { bar: 0.4, cellar: 0.8, holding: 0 },
@@ -259,7 +259,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "dmf-finger-coconut",
     name: "DMF Finger Coconut",
-    category: "SPIRITS - RUMS",
+    category: "Rum",
     unit: "bottle",
     costPerUnit: 17.29,
     stock: { bar: 0.3, cellar: 0.7, holding: 0 },
@@ -269,7 +269,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "dmf-spiced-0",
     name: "DMF Spiced 0%",
-    category: "SPIRITS - RUMS",
+    category: "Rum",
     unit: "bottle",
     costPerUnit: 14.79,
     stock: { bar: 0.2, cellar: 0.5, holding: 0 },
@@ -279,7 +279,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "mount-gay",
     name: "Mount Gay",
-    category: "SPIRITS - RUMS",
+    category: "Rum",
     unit: "bottle",
     costPerUnit: 20.59,
     stock: { bar: 0.5, cellar: 0.9, holding: 0 },
@@ -289,7 +289,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "kraken-rum",
     name: "Kraken Rum",
-    category: "SPIRITS - RUMS",
+    category: "Rum",
     unit: "bottle",
     costPerUnit: 23.49,
     stock: { bar: 0.7, cellar: 1.3, holding: 0 },
@@ -299,7 +299,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "morgans-spiced",
     name: "Morgans Spiced",
-    category: "SPIRITS - RUMS",
+    category: "Rum",
     unit: "bottle",
     costPerUnit: 14.49,
     stock: { bar: 0.8, cellar: 1.6, holding: 0 },
@@ -309,7 +309,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "morgans-rum",
     name: "Morgans Rum",
-    category: "SPIRITS - RUMS",
+    category: "Rum",
     unit: "bottle",
     costPerUnit: 16.19,
     stock: { bar: 0.4, cellar: 1.1, holding: 0 },
@@ -319,7 +319,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "sailor-jerrys",
     name: "Sailor Jerrys",
-    category: "SPIRITS - RUMS",
+    category: "Rum",
     unit: "bottle",
     costPerUnit: 24.59,
     stock: { bar: 0.6, cellar: 1.0, holding: 0 },
@@ -327,7 +327,7 @@ export const stAustellProducts: Product[] = [
     supplierId: "st-austell"
   },
 
-  // SPIRITS - VODKA
+  // VODKA
   {
     id: "smirnoff-red",
     name: "Smirnoff Red",
@@ -341,7 +341,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "absolute-citron",
     name: "Absolute Citron",
-    category: "SPIRITS - VODKA",
+    category: "Vodka",
     unit: "bottle",
     costPerUnit: 0.00, // Price not specified in list
     stock: { bar: 0.1, cellar: 0.2, holding: 0 },
@@ -349,7 +349,7 @@ export const stAustellProducts: Product[] = [
     supplierId: "st-austell"
   },
 
-  // SPIRITS - LIQUEURS
+  // COCKTAILS
   {
     id: "tia-maria",
     name: "Tia Maria",
@@ -363,7 +363,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "77black",
     name: "77Black",
-    category: "SPIRITS - LIQUEURS",
+    category: "Cocktails",
     unit: "bottle",
     costPerUnit: 18.50,
     stock: { bar: 0.3, cellar: 0.6, holding: 0 },
@@ -373,7 +373,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "ron-calados-white-rum",
     name: "Ron Calados White Rum",
-    category: "SPIRITS - LIQUEURS",
+    category: "Cocktails",
     unit: "bottle",
     costPerUnit: 13.09,
     stock: { bar: 0.5, cellar: 1.0, holding: 0 },
@@ -383,7 +383,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "archers-peach",
     name: "Archers Peach",
-    category: "SPIRITS - LIQUEURS",
+    category: "Cocktails",
     unit: "bottle",
     costPerUnit: 13.49,
     stock: { bar: 0.7, cellar: 1.3, holding: 0 },
@@ -393,7 +393,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "beefeater-pink-gin",
     name: "Beefeater Pink Gin",
-    category: "SPIRITS - LIQUEURS",
+    category: "Cocktails",
     unit: "bottle",
     costPerUnit: 17.69,
     stock: { bar: 0.2, cellar: 0.5, holding: 0 },
@@ -403,7 +403,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "bol-curacao",
     name: "Bol Curacao",
-    category: "SPIRITS - LIQUEURS",
+    category: "Cocktails",
     unit: "bottle",
     costPerUnit: 13.79,
     stock: { bar: 0.1, cellar: 0.4, holding: 0 },
@@ -413,7 +413,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "bristol-grenadine",
     name: "Bristol Grenadine",
-    category: "SPIRITS - LIQUEURS",
+    category: "Cocktails",
     unit: "bottle",
     costPerUnit: 8.08,
     stock: { bar: 0.6, cellar: 1.2, holding: 0 },
@@ -423,17 +423,19 @@ export const stAustellProducts: Product[] = [
   {
     id: "bristol-sugar-syrup",
     name: "Bristol Sugar Syrup",
-    category: "SPIRITS - LIQUEURS",
+    category: "Cocktails",
     unit: "bottle",
     costPerUnit: 5.19,
     stock: { bar: 0.8, cellar: 1.5, holding: 0 },
     reorderPoint: 1.0,
     supplierId: "st-austell"
   },
+
+  // SHOOTERS
   {
     id: "tequila-rose",
     name: "Tequila Rose",
-    category: "SPIRITS - LIQUEURS",
+    category: "Shooters",
     unit: "bottle",
     costPerUnit: 18.09,
     stock: { bar: 0.5, cellar: 0.9, holding: 0 },
@@ -443,7 +445,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "dr-hydes-jaeger",
     name: "Dr Hydes/Jaeger",
-    category: "SPIRITS - LIQUEURS",
+    category: "Shooters",
     unit: "bottle",
     costPerUnit: 17.49,
     stock: { bar: 0.3, cellar: 0.7, holding: 0 },
@@ -453,7 +455,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "dmf-raspberry-liqueur",
     name: "DMF Raspberry Liqueur",
-    category: "SPIRITS - LIQUEURS",
+    category: "Shooters",
     unit: "bottle",
     costPerUnit: 11.79,
     stock: { bar: 0.2, cellar: 0.5, holding: 0 },
@@ -463,7 +465,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "jose-cuervo-white-teq",
     name: "Jose Cuervo White Teq",
-    category: "SPIRITS - LIQUEURS",
+    category: "Shooters",
     unit: "bottle",
     costPerUnit: 21.39,
     stock: { bar: 0.4, cellar: 0.8, holding: 0 },
@@ -473,7 +475,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "jose-cuervo-gold-teq",
     name: "Jose Cuervo Gold Teq",
-    category: "SPIRITS - LIQUEURS",
+    category: "Shooters",
     unit: "bottle",
     costPerUnit: 20.59,
     stock: { bar: 0.6, cellar: 1.0, holding: 0 },
@@ -483,7 +485,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "luxardo-sambuca",
     name: "Luxardo Sambuca",
-    category: "SPIRITS - LIQUEURS",
+    category: "Shooters",
     unit: "bottle",
     costPerUnit: 16.29,
     stock: { bar: 0.3, cellar: 0.6, holding: 0 },
@@ -493,17 +495,19 @@ export const stAustellProducts: Product[] = [
   {
     id: "luxardo-black-sambuca",
     name: "Luxardo Black Sambuca",
-    category: "SPIRITS - LIQUEURS",
+    category: "Shooters",
     unit: "bottle",
     costPerUnit: 16.99,
     stock: { bar: 0.1, cellar: 0.3, holding: 0 },
     reorderPoint: 0.5,
     supplierId: "st-austell"
   },
+
+  // SPIRITS MISC
   {
     id: "courvoisier",
     name: "Courvoisier",
-    category: "SPIRITS - LIQUEURS",
+    category: "Spirits Misc",
     unit: "bottle",
     costPerUnit: 25.79,
     stock: { bar: 0.2, cellar: 0.4, holding: 0 },
@@ -513,7 +517,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "cockburns",
     name: "Cockburns",
-    category: "SPIRITS - LIQUEURS",
+    category: "Spirits Misc",
     unit: "bottle",
     costPerUnit: 10.52,
     stock: { bar: 0.3, cellar: 0.7, holding: 0 },
@@ -523,7 +527,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "disaronno-amaretto",
     name: "Disaronno Amaretto",
-    category: "SPIRITS - LIQUEURS",
+    category: "Spirits Misc",
     unit: "bottle",
     costPerUnit: 19.39,
     stock: { bar: 0.5, cellar: 0.8, holding: 0 },
@@ -533,7 +537,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "malibu",
     name: "Malibu",
-    category: "SPIRITS - LIQUEURS",
+    category: "Spirits Misc",
     unit: "bottle",
     costPerUnit: 14.29,
     stock: { bar: 0.7, cellar: 1.3, holding: 0 },
@@ -543,7 +547,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "bacardi",
     name: "Bacardi",
-    category: "SPIRITS - LIQUEURS",
+    category: "Spirits Misc",
     unit: "bottle",
     costPerUnit: 17.69,
     stock: { bar: 0.8, cellar: 1.5, holding: 0 },
@@ -553,7 +557,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "baileys",
     name: "Baileys",
-    category: "SPIRITS - LIQUEURS",
+    category: "Spirits Misc",
     unit: "bottle",
     costPerUnit: 14.09,
     stock: { bar: 0.6, cellar: 1.2, holding: 0 },
@@ -561,11 +565,11 @@ export const stAustellProducts: Product[] = [
     supplierId: "st-austell"
   },
 
-  // WINES - RED
+  // RED WINES
   {
     id: "billycan-shiraz",
     name: "Billycan Shiraz",
-    category: "WINES - RED",
+    category: "Red Wine",
     unit: "bottle",
     costPerUnit: 7.21,
     stock: { bar: 2, cellar: 6, holding: 0 },
@@ -575,7 +579,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "alta-merlot",
     name: "Alta Merlot",
-    category: "WINES - RED",
+    category: "Red Wine",
     unit: "bottle",
     costPerUnit: 6.43,
     stock: { bar: 3, cellar: 8, holding: 0 },
@@ -585,7 +589,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "alta-cab-sauv",
     name: "Alta Cab Sauv",
-    category: "WINES - RED",
+    category: "Red Wine",
     unit: "bottle",
     costPerUnit: 6.43,
     stock: { bar: 1, cellar: 5, holding: 0 },
@@ -593,11 +597,11 @@ export const stAustellProducts: Product[] = [
     supplierId: "st-austell"
   },
 
-  // WINES - ROSE
+  // ROSE WINE
   {
     id: "tanti-pinot-rose",
     name: "Tanti Pinot Rose",
-    category: "WINES - ROSE",
+    category: "Rose Wine",
     unit: "bottle",
     costPerUnit: 6.20,
     stock: { bar: 2, cellar: 7, holding: 0 },
@@ -607,7 +611,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "falling-petal-rose",
     name: "Falling Petal Rose",
-    category: "WINES - ROSE",
+    category: "Rose Wine",
     unit: "bottle",
     costPerUnit: 6.63,
     stock: { bar: 1, cellar: 4, holding: 0 },
@@ -615,11 +619,11 @@ export const stAustellProducts: Product[] = [
     supplierId: "st-austell"
   },
 
-  // WINES - WHITE
+  // WHITE WINE
   {
     id: "arapala-sky-chardonnay",
     name: "Arapala Sky Chardonnay",
-    category: "WINES - WHITE",
+    category: "White Wine",
     unit: "bottle",
     costPerUnit: 5.82,
     stock: { bar: 3, cellar: 9, holding: 0 },
@@ -629,7 +633,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "frunza-pinot-grigio",
     name: "Frunza Pinot Grigio",
-    category: "WINES - WHITE",
+    category: "White Wine",
     unit: "bottle",
     costPerUnit: 6.30,
     stock: { bar: 2, cellar: 8, holding: 0 },
@@ -639,7 +643,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "sauv-blanc-rue-de-amis",
     name: "Sauv Blanc Rue de Amis",
-    category: "WINES - WHITE",
+    category: "White Wine",
     unit: "bottle",
     costPerUnit: 6.92,
     stock: { bar: 4, cellar: 10, holding: 0 },
@@ -649,7 +653,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "seafarer-sauv-blanc-nz",
     name: "Seafarer Sauv Blanc NZ",
-    category: "WINES - WHITE",
+    category: "White Wine",
     unit: "bottle",
     costPerUnit: 9.45,
     stock: { bar: 1, cellar: 5, holding: 0 },
@@ -657,11 +661,11 @@ export const stAustellProducts: Product[] = [
     supplierId: "st-austell"
   },
 
-  // WINES - SPARKLING
+  // BUBBLES DARLING
   {
     id: "pouring-prosecco",
     name: "Pouring Prosecco",
-    category: "WINES - SPARKLING",
+    category: "Bubbles",
     unit: "bottle",
     costPerUnit: 6.67,
     stock: { bar: 2, cellar: 8, holding: 0 },
@@ -671,7 +675,7 @@ export const stAustellProducts: Product[] = [
   {
     id: "bottles-prosecco",
     name: "Bottles Prosecco",
-    category: "WINES - SPARKLING",
+    category: "Bubbles",
     unit: "bottle",
     costPerUnit: 7.77,
     stock: { bar: 1, cellar: 6, holding: 0 },

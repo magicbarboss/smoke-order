@@ -61,7 +61,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				'stock-low': 'hsl(var(--stock-low))',
+				'stock-medium': 'hsl(var(--stock-medium))', 
+				'stock-high': 'hsl(var(--stock-high))',
+				'table-row-even': 'hsl(var(--table-row-even))',
+				'table-row-hover': 'hsl(var(--table-row-hover))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

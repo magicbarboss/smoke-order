@@ -187,7 +187,7 @@ export default function BeveragesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Star Pubs & Bars</h1>
+          <h1 className="text-3xl font-bold text-foreground">Star Pubs & Bars</h1>
           <p className="text-muted-foreground">Premium beverages and bar supplies</p>
         </div>
         <div className="flex items-center gap-4">
@@ -227,50 +227,52 @@ export default function BeveragesPage() {
               }));
             }}
           />
-          <div className="flex items-center space-x-4">
-            <Badge variant="outline" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Deadline: Thursday 4pm
-            </Badge>
-            <Badge variant="secondary" className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              Delivery: Monday 10am-2pm
-            </Badge>
-          </div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Badge variant="outline" className="flex items-center gap-2 px-4 py-2">
+            <Clock className="h-4 w-4 text-primary" />
+            <span className="font-medium">Deadline: Thursday 4pm</span>
+          </Badge>
+          <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
+            <Building className="h-4 w-4 text-primary" />
+            <span className="font-medium">Delivery: Monday 10am-2pm</span>
+          </Badge>
         </div>
       </div>
 
       {/* Order Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            Current Order
+      <Card className="border-2 border-primary/10 bg-gradient-to-r from-background to-muted/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <ShoppingCart className="h-5 w-5 text-primary" />
+            Current Order Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <div className="text-2xl font-bold">{totalItems}</div>
-              <p className="text-sm text-muted-foreground">Items</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">{totalItems}</div>
+              <p className="text-sm text-muted-foreground font-medium">Items</p>
             </div>
-            <div>
-              <div className="text-2xl font-bold">£{totalCost.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">Subtotal</p>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-foreground">£{totalCost.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground font-medium">Subtotal</p>
             </div>
-            <div>
-              <div className="text-2xl font-bold">£{vatAmount.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">VAT (20%)</p>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-muted-foreground">£{vatAmount.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground font-medium">VAT (20%)</p>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-primary">£{totalWithVAT.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">Total</p>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary">£{totalWithVAT.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground font-medium">Total</p>
             </div>
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-3 mt-6 justify-center">
             <Button 
               disabled={totalItems === 0 || submitting} 
               onClick={handleSubmitOrder}
+              size="lg"
+              className="px-8"
             >
               {submitting ? 'Submitting...' : 'Submit Order'}
             </Button>
@@ -278,13 +280,21 @@ export default function BeveragesPage() {
               variant="outline" 
               disabled={totalItems === 0 || saving}
               onClick={handleSaveDraft}
+              size="lg"
+              className="px-8"
             >
               {saving ? 'Saving...' : 'Save Draft'}
             </Button>
-            <Button variant="ghost" disabled={totalItems === 0} onClick={() => {
-              console.log('Clear clicked');
-              setOrderQuantities({});
-            }}>
+            <Button 
+              variant="ghost" 
+              disabled={totalItems === 0} 
+              onClick={() => {
+                console.log('Clear clicked');
+                setOrderQuantities({});
+              }}
+              size="lg"
+              className="px-8"
+            >
               Clear
             </Button>
           </div>
@@ -292,11 +302,14 @@ export default function BeveragesPage() {
       </Card>
 
       {/* Inventory */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Beverages Inventory</CardTitle>
+      <Card className="border-2">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl text-foreground">Beverages Inventory</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Track stock levels and place orders. Case quantities automatically detected.
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <InventoryTable
             products={products}
             showLocations={["bar", "cellar"]}

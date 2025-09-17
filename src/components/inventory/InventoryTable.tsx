@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
 import { useRef } from "react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface InventoryTableProps {
   products: Product[];
@@ -51,8 +52,16 @@ export function InventoryTable({
   const getStockBadgeVariant = (level: string) => {
     switch (level) {
       case "low": return "destructive";
-      case "medium": return "outline";
+      case "medium": return "default";
       default: return "secondary";
+    }
+  };
+
+  const getStockBadgeColor = (level: string) => {
+    switch (level) {
+      case "low": return "text-white bg-stock-low border-stock-low";
+      case "medium": return "text-foreground bg-stock-medium/20 border-stock-medium";
+      default: return "text-white bg-stock-high border-stock-high";
     }
   };
 
@@ -84,24 +93,39 @@ export function InventoryTable({
   const getStockStep = (product: Product) => shouldUseDecimals(product) ? 0.1 : 1;
   const getStockIncrement = (product: Product) => shouldUseDecimals(product) ? 0.1 : 1;
 
-  // Get quick entry presets based on product category/unit
+  // Get quick entry presets based on product category/unit - FIXED for case-based products
   const getQuickEntryPresets = (product: Product) => {
+    const name = product.name.toLowerCase();
     const category = product.category.toLowerCase();
     const unit = product.unit.toLowerCase();
     
-    // For bottles and cans (common case sizes)
-    if (unit.includes('bottle') || unit.includes('can') || category.includes('bottle') || category.includes('can')) {
-      return [6, 12, 18, 24];
+    // Case-based products (like Speckled Hen £19.14 for 8 bottles)
+    // Look for patterns that indicate case/pack products
+    if (unit.includes('case') || unit.includes('box') || unit.includes('pack') || 
+        name.includes('case') || name.includes('box') || name.includes('pack') ||
+        (unit.includes('bottle') && (name.includes('8') || name.includes('12') || name.includes('24')))) {
+      return [1, 2, 3, 5]; // Cases/packs
     }
     
-    // For kegs (common quantities)
+    // Individual bottles/cans (sold individually)
+    if ((unit.includes('bottle') || unit.includes('can')) && 
+        !name.includes('case') && !name.includes('pack') && !name.includes('box')) {
+      return [6, 12, 18, 24]; // Individual bottles
+    }
+    
+    // Kegs (common quantities)
     if (unit.includes('keg') || category.includes('keg') || category.includes('draught')) {
       return [1, 2, 3, 5];
     }
     
-    // For cases/boxes
-    if (unit.includes('case') || unit.includes('box')) {
-      return [1, 2, 3, 5, 10];
+    // Wine bottles (typically ordered individually or by 6/12)
+    if (category.includes('wine') || category.includes('bubbles')) {
+      return [1, 6, 12, 24];
+    }
+    
+    // Spirits (typically ordered by bottle)
+    if (category.includes('spirit') || category.includes('whisky') || category.includes('gin') || category.includes('vodka')) {
+      return [1, 2, 3, 6];
     }
     
     // Default presets for other products
@@ -115,13 +139,13 @@ export function InventoryTable({
           <TableRow>
             <TableHead>Product</TableHead>
             <TableHead>Category</TableHead>
-            {showLocations.includes("bar") && <TableHead>Bar</TableHead>}
-            {showLocations.includes("cellar") && <TableHead>Cellar</TableHead>}
-            {showLocations.includes("holding") && <TableHead>Holding</TableHead>}
-            {showLocations.includes("comingMon") && <TableHead>Coming Mon</TableHead>}
-            <TableHead>Total</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Unit Cost</TableHead>
+            {showLocations.includes("bar") && <TableHead className="text-center">Bar Stock</TableHead>}
+            {showLocations.includes("cellar") && <TableHead className="text-center">Cellar Stock</TableHead>}
+            {showLocations.includes("holding") && <TableHead className="text-center">Holding</TableHead>}
+            {showLocations.includes("comingMon") && <TableHead className="text-center">Coming Mon</TableHead>}
+            <TableHead className="text-center">Total Stock</TableHead>
+            <TableHead className="text-center">Stock Level</TableHead>
+            <TableHead>Unit Cost & Info</TableHead>
             <TableHead>Reorder Point</TableHead>
             <TableHead>Last Ordered</TableHead>
             <TableHead>Order Qty</TableHead>
@@ -129,7 +153,7 @@ export function InventoryTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((product) => {
+          {products.map((product, index) => {
             const stockLevel = getStockLevel(product);
             const currentStock = stockLevels?.[product.id] || product.stock;
             const barStock = Number(currentStock?.bar) || 0;
@@ -137,9 +161,16 @@ export function InventoryTable({
             const total = shouldUseDecimals(product) ? roundToOneDecimal(barStock + cellarStock) : barStock + cellarStock;
             const orderQty = orderQuantities[product.id] || 0;
             const orderCost = orderQty * product.costPerUnit;
+            const isEvenRow = index % 2 === 0;
 
             return (
-              <TableRow key={product.id}>
+              <TableRow 
+                key={product.id} 
+                className={cn(
+                  isEvenRow && "bg-table-row-even",
+                  "hover:bg-table-row-hover transition-colors"
+                )}
+              >
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>{product.category}</TableCell>
                 {showLocations.includes("bar") && (
@@ -244,15 +275,50 @@ export function InventoryTable({
                 )}
                 {showLocations.includes("holding") && <TableCell>{product.stock.holding || 0}</TableCell>}
                 {showLocations.includes("comingMon") && <TableCell>{product.stock.comingMon || 0}</TableCell>}
-                <TableCell className="font-medium">
-                  {shouldUseDecimals(product) ? roundToOneDecimal(total).toFixed(1) : total}
+                <TableCell className="text-center font-medium">
+                  <div className="space-y-1">
+                    <div className={cn("text-lg font-bold",
+                      stockLevel === "low" && "text-stock-low",
+                      stockLevel === "medium" && "text-stock-medium", 
+                      stockLevel === "high" && "text-stock-high"
+                    )}>
+                      {shouldUseDecimals(product) ? roundToOneDecimal(total).toFixed(1) : total}
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className={cn("h-2 rounded-full transition-all duration-300",
+                          stockLevel === "low" && "bg-stock-low",
+                          stockLevel === "medium" && "bg-stock-medium",
+                          stockLevel === "high" && "bg-stock-high"
+                        )}
+                        style={{ 
+                          width: `${Math.min((total / Math.max(product.reorderPoint * 2, 1)) * 100, 100)}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
                 </TableCell>
-                <TableCell>
-                  <Badge variant={getStockBadgeVariant(stockLevel)}>
-                    {stockLevel.toUpperCase()}
+                <TableCell className="text-center">
+                  <Badge 
+                    variant="outline"
+                    className={cn("font-medium border-2", getStockBadgeColor(stockLevel))}
+                  >
+                    <div className="flex items-center gap-1">
+                      <div className={cn("w-2 h-2 rounded-full",
+                        stockLevel === "low" && "bg-stock-low",
+                        stockLevel === "medium" && "bg-stock-medium", 
+                        stockLevel === "high" && "bg-stock-high"
+                      )} />
+                      {stockLevel.toUpperCase()}
+                    </div>
                   </Badge>
                 </TableCell>
-                <TableCell>£{product.costPerUnit.toFixed(2)}</TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="font-medium">£{product.costPerUnit.toFixed(2)}</div>
+                    <div className="text-xs text-muted-foreground">{product.unit}</div>
+                  </div>
+                </TableCell>
                 <TableCell>{product.reorderPoint}</TableCell>
                 <TableCell>
                   {orderHistory?.[product.id] ? (
@@ -326,14 +392,14 @@ export function InventoryTable({
                     </div>
                     
                     {/* Quick entry presets */}
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 justify-center">
                       {getQuickEntryPresets(product).map((preset) => (
                         <Button
                           key={preset}
                           variant="ghost"
                           size="sm"
                           onClick={() => onQuantityChange(product.id, preset)}
-                          className="h-6 px-2 text-xs bg-muted/50 hover:bg-muted"
+                          className="h-7 px-3 text-xs bg-muted/30 hover:bg-primary/10 border border-muted-foreground/20 hover:border-primary/30 font-medium"
                         >
                           {preset}
                         </Button>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EditableSelect } from "@/components/ui/editable-select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings } from "lucide-react";
@@ -241,18 +242,12 @@ export function ProductEditDialog({
                   
                   <div>
                     <Label htmlFor={`category-${product.id}`}>Category</Label>
-                    <Input
-                      id={`category-${product.id}`}
+                    <EditableSelect
                       value={editingProduct.category}
-                      onChange={(e) => updateEditingProduct(product.id, 'category', e.target.value)}
-                      className="w-full"
-                      list={`categories-${product.id}`}
+                      onValueChange={(value) => updateEditingProduct(product.id, 'category', value)}
+                      options={existingCategories}
+                      placeholder="Select or add category..."
                     />
-                    <datalist id={`categories-${product.id}`}>
-                      {existingCategories.map(category => (
-                        <option key={category} value={category} />
-                      ))}
-                    </datalist>
                   </div>
                   
                   <div>

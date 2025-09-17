@@ -62,7 +62,6 @@ export function ProductEditDialog({
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showDiscontinued, setShowDiscontinued] = useState(false);
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth();
   const [dbIdMap, setDbIdMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -171,16 +170,6 @@ export function ProductEditDialog({
   };
 
   const handleSaveChanges = async () => {
-    // Check authentication first
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "You must be logged in to edit products.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const changedProducts = getChangedProducts();
     
     if (changedProducts.length === 0) {

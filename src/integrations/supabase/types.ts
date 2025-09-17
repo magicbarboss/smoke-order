@@ -84,7 +84,7 @@ export type Database = {
           supplier_id: string
           total_cost?: number
           updated_at?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           created_at?: string

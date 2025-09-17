@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Product, StockLocation } from "@/types/inventory";
 import { ShoppingCart, Clock, Building, Search, Filter } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { Toaster } from "@/components/ui/toaster";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,8 +27,6 @@ export default function BeveragesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   const { saveDraft, submitOrder, saving = false, submitting = false } = useOrders();
   const { orderHistory, getLastOrderInfo } = useOrderHistory('star-pubs');
   
@@ -37,16 +34,7 @@ export default function BeveragesPage() {
   const productIds = products.map(p => p.id);
   const { stockLevels, updateStock, isLoading: stockLoading, isSaving } = useStockLevels(productIds);
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
   const fetchProducts = async () => {
-    if (!user) return;
-    
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -85,10 +73,8 @@ export default function BeveragesPage() {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchProducts();
-    }
-  }, [user]);
+    fetchProducts();
+  }, []);
 
   // Create category groupings - Updated based on actual product analysis
   const getCategoryGroup = (category: string, productName: string = ''): string => {
@@ -206,7 +192,7 @@ export default function BeveragesPage() {
     }
   };
 
-  if (authLoading) {
+  if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+const PUBLIC_USER_ID = '00000000-0000-0000-0000-000000000000';
 
 export interface OrderItem {
   productId: string;
@@ -14,25 +14,15 @@ export function useOrders() {
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
 
   const saveDraft = async (supplierId: string, items: OrderItem[], totalCost: number) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to save drafts.",
-        variant: "destructive",
-      });
-      return { success: false };
-    }
-
     setSaving(true);
     try {
       // First, create or update the order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .upsert({
-          user_id: user.id,
+          user_id: PUBLIC_USER_ID,
           supplier_id: supplierId,
           status: 'draft',
           total_cost: totalCost,
@@ -88,22 +78,13 @@ export function useOrders() {
   };
 
   const submitOrder = async (supplierId: string, items: OrderItem[], totalCost: number) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to submit orders.",
-        variant: "destructive",
-      });
-      return { success: false };
-    }
-
     setSubmitting(true);
     try {
       // Create the order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
-          user_id: user.id,
+          user_id: PUBLIC_USER_ID,
           supplier_id: supplierId,
           status: 'submitted',
           total_cost: totalCost,

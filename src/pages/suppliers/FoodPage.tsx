@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
@@ -40,7 +39,6 @@ export default function FoodPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const { toast } = useToast();
-  const { user } = useAuth();
   const { submitOrder } = useOrders();
   const { orderHistory, getLastOrderInfo } = useOrderHistory("salvo-charles");
 
@@ -51,13 +49,10 @@ export default function FoodPage() {
   const supplier = suppliers.find(s => s.id === "salvo-charles");
 
   useEffect(() => {
-    if (user) {
-      fetchProducts();
-    }
-  }, [user]);
+    fetchProducts();
+  }, []);
 
   const fetchProducts = async () => {
-    if (!user) return;
     
     setLoading(true);
     try {

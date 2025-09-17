@@ -14,7 +14,6 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Product } from "@/types/inventory";
 import { ShoppingCart, Clock, Building, Search, Filter } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { Toaster } from "@/components/ui/toaster";
 import { stAustellProducts } from "@/data/st-austell-products";
@@ -31,10 +30,8 @@ export default function SpiritsPage() {
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const { user, loading: authLoading } = useAuth();
   const { saveDraft, submitOrder, saving, submitting } = useOrders();
   const { orderHistory, getLastOrderInfo } = useOrderHistory('st-austell', 7);
-  const navigate = useNavigate();
   
   // Get product IDs for stock levels
   const productIds = products.map(p => p.id);
@@ -42,7 +39,6 @@ export default function SpiritsPage() {
 
   // Fetch products from Supabase and auto-import if needed
   const fetchProducts = async () => {
-    if (!user) return;
     
     try {
       const { data, error } = await supabase
@@ -172,15 +168,8 @@ export default function SpiritsPage() {
   };
 
   useEffect(() => {
-    if (user && !authLoading) {
-      fetchProducts();
-    }
-  }, [user, authLoading]);
-
-  // Redirect to auth if not logged in
-  if (!authLoading && !user) {
-    return <Navigate to="/auth" />;
-  }
+    fetchProducts();
+  }, []);
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setOrderQuantities(prev => ({
@@ -254,7 +243,7 @@ export default function SpiritsPage() {
     }
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 

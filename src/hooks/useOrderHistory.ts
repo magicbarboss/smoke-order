@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 
 interface OrderHistoryItem {
@@ -13,16 +12,14 @@ interface OrderHistoryItem {
 export function useOrderHistory(supplierId: string, daysBack: number = 7) {
   const [orderHistory, setOrderHistory] = useState<Record<string, OrderHistoryItem[]>>({});
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (user && supplierId) {
+    if (supplierId) {
       fetchOrderHistory();
     }
-  }, [user, supplierId, daysBack]);
+  }, [supplierId, daysBack]);
 
   const fetchOrderHistory = async () => {
-    if (!user) return;
     
     setLoading(true);
     try {
@@ -41,7 +38,6 @@ export function useOrderHistory(supplierId: string, daysBack: number = 7) {
             quantity
           )
         `)
-        .eq('user_id', user.id)
         .eq('supplier_id', supplierId)
         .gte('order_date', format(startDate, 'yyyy-MM-dd'))
         .lte('order_date', format(endDate, 'yyyy-MM-dd'))

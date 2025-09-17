@@ -14,14 +14,14 @@ import { ShoppingCart, Clock, Building, Search, Filter } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { Toaster } from "@/components/ui/toaster";
-import { starPubsProducts } from "@/data/star-pubs-products";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function BeveragesPage() {
-  const [products, setProducts] = useState<Product[]>(starPubsProducts);
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
   const [stockLevels, setStockLevels] = useState<Record<string, { bar: number; cellar: number }>>({});
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,8 +38,57 @@ export default function BeveragesPage() {
     }
   }, [user, authLoading, navigate]);
 
-  // No need to fetch products as they're loaded from data file
-  // Remove the fetchProducts function and database fetch logic
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('supplier_id', 'star-pubs');
+
+        if (error) throw error;
+        
+        // Transform database products to match our Product interface
+        const transformedProducts: Product[] = data.map(product => ({
+          id: product.id,
+          name: product.name,
+          category: product.category,
+          unit: product.unit,
+          costPerUnit: Number(product.current_price),
+          stock: { bar: 0, cellar: 0, holding: 0, comingMon: 0 },
+          reorderPoint: product.reorder_point || 0,
+          supplierId: product.supplier_id
+        }));
+
+        setProducts(transformedProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [user]);
+
+  // Create category groupings
+  const getCategoryGroup = (category: string): string => {
+    const bottledCategories = ['Bottled Beer', 'Bottled Cider', 'Bottled Lager', 'Fruity Cider', 'No & Low Bottles'];
+    const postMixCategories = ['Cordials/Post-Mix', 'Post-Mix'];
+    const draughtCategories = ['Craft Draught Keg', 'Draught Keg'];
+    const softDrinkCategories = ['Soft Bottles Single Serve'];
+    
+    if (bottledCategories.includes(category)) return 'BOTTLED';
+    if (postMixCategories.includes(category)) return 'POST-MIX';
+    if (draughtCategories.includes(category)) return 'DRAUGHT';
+    if (softDrinkCategories.includes(category)) return 'SOFT DRINKS';
+    if (category === 'Mixers') return 'MIXERS';
+    
+    return category;
+  };
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setOrderQuantities(prev => ({
@@ -58,10 +107,10 @@ export default function BeveragesPage() {
     }));
   };
 
-  // Get unique categories for filter
+  // Get unique category groups for filter
   const categories = useMemo(() => {
-    const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
-    return uniqueCategories.sort();
+    const categoryGroups = products.map(p => getCategoryGroup(p.category));
+    return Array.from(new Set(categoryGroups)).sort();
   }, [products]);
 
   // Filter products based on search and category
@@ -69,7 +118,8 @@ export default function BeveragesPage() {
     return products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.category.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+      const productCategoryGroup = getCategoryGroup(product.category);
+      const matchesCategory = selectedCategory === "all" || productCategoryGroup === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [products, searchTerm, selectedCategory]);

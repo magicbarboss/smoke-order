@@ -17,19 +17,24 @@ import { Toaster } from "@/components/ui/toaster";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
+import { useStockLevels } from "@/hooks/useStockLevels";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function BeveragesPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
-  const [stockLevels, setStockLevels] = useState<Record<string, { bar: number; cellar: number }>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  
   const { user, loading: authLoading } = useAuth();
-  const { saveDraft, submitOrder, saving, submitting } = useOrders();
-  const { orderHistory, getLastOrderInfo } = useOrderHistory('star-pubs', 7);
   const navigate = useNavigate();
+  const { saveDraft, submitOrder, saving, submitting } = useOrders();
+  const { orderHistory, getLastOrderInfo } = useOrderHistory('star-pubs');
+  
+  // Use the stock levels hook for auto-save functionality
+  const productIds = products.map(p => p.id);
+  const { stockLevels, updateStock, isLoading: stockLoading, isSaving } = useStockLevels(productIds);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -74,20 +79,40 @@ export default function BeveragesPage() {
     fetchProducts();
   }, [user]);
 
-  // Create category groupings
-  const getCategoryGroup = (category: string): string => {
+  // Create category groupings - Updated based on actual product analysis
+  const getCategoryGroup = (category: string, productName: string = ''): string => {
     const bottledCategories = ['Bottled Beer', 'Bottled Cider', 'Bottled Lager', 'Fruity Cider', 'No & Low Bottles'];
-    const postMixCategories = ['Cordials/Post-Mix', 'Post-Mix'];
     const draughtCategories = ['Craft Draught Keg', 'Draught Keg'];
     const softDrinkCategories = ['Soft Bottles Single Serve'];
     
     if (bottledCategories.includes(category)) return 'BOTTLED';
-    if (postMixCategories.includes(category)) return 'POST-MIX';
     if (draughtCategories.includes(category)) return 'DRAUGHT';
     if (softDrinkCategories.includes(category)) return 'SOFT DRINKS';
     if (category === 'Mixers') return 'MIXERS';
     
+    // Distinguish between Post-Mix (actual post-mix systems) and Mixers (cordials)
+    if (category === 'Post-Mix' || productName.toLowerCase().includes('postmix')) {
+      return 'POST-MIX';
+    }
+    if (category === 'Cordials/Post-Mix') {
+      // Blackcurrent and Lime are mixers, not post-mix
+      return 'MIXERS';
+    }
+    
     return category;
+  };
+
+  // Get product locations based on category
+  const getProductLocations = (category: string, productName: string = ''): string[] => {
+    const categoryGroup = getCategoryGroup(category, productName);
+    
+    // Post-Mix and Draught are cellar-only
+    if (categoryGroup === 'POST-MIX' || categoryGroup === 'DRAUGHT') {
+      return ['cellar'];
+    }
+    
+    // All other products show both bar and cellar
+    return ['bar', 'cellar'];
   };
 
   const handleQuantityChange = (productId: string, quantity: number) => {
@@ -98,18 +123,14 @@ export default function BeveragesPage() {
   };
 
   const handleStockChange = (productId: string, location: string, quantity: number) => {
-    setStockLevels(prev => ({
-      ...prev,
-      [productId]: {
-        ...prev[productId],
-        [location]: quantity
-      }
-    }));
+    if (location === 'bar' || location === 'cellar') {
+      updateStock(productId, location, quantity);
+    }
   };
 
   // Get unique category groups for filter
   const categories = useMemo(() => {
-    const categoryGroups = products.map(p => getCategoryGroup(p.category));
+    const categoryGroups = products.map(p => getCategoryGroup(p.category, p.name));
     return Array.from(new Set(categoryGroups)).sort();
   }, [products]);
 
@@ -118,7 +139,7 @@ export default function BeveragesPage() {
     return products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.category.toLowerCase().includes(searchTerm.toLowerCase());
-      const productCategoryGroup = getCategoryGroup(product.category);
+      const productCategoryGroup = getCategoryGroup(product.category, product.name);
       const matchesCategory = selectedCategory === "all" || productCategoryGroup === selectedCategory;
       return matchesSearch && matchesCategory;
     });

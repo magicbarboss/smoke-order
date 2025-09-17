@@ -23,6 +23,8 @@ interface InventoryTableProps {
   onStockChange?: (productId: string, location: string, quantity: number) => void;
   stockLevels?: Record<string, { bar: number; cellar: number }>;
   orderHistory?: Record<string, { lastOrderDate: string; lastOrderQuantity: number; totalQuantityInPeriod: number; status: string } | null>;
+  getProductLocations?: (category: string, productName?: string) => string[];
+  isSaving?: boolean;
 }
 
 // Helper function to properly round to one decimal place and avoid floating-point precision issues
@@ -37,13 +39,28 @@ export function InventoryTable({
   orderQuantities,
   onStockChange,
   stockLevels,
-  orderHistory
+  orderHistory,
+  getProductLocations,
+  isSaving
 }: InventoryTableProps) {
   const getStockLevel = (product: Product) => {
     const currentStock = stockLevels?.[product.id] || product.stock;
     const barStock = Number(currentStock?.bar) || 0;
     const cellarStock = Number(currentStock?.cellar) || 0;
     const total = barStock + cellarStock;
+    
+    // Special logic for Post-Mix and Draught kegs
+    const isKegOrPostMix = product.category.toLowerCase().includes('keg') || 
+                          product.category.toLowerCase().includes('post-mix') ||
+                          product.name.toLowerCase().includes('postmix');
+                          
+    if (isKegOrPostMix) {
+      if (total < 0.2) return "low";
+      if (total < 1.0) return "medium"; 
+      return "high";
+    }
+    
+    // Standard logic for other products
     if (total <= product.reorderPoint) return "low";
     if (total <= product.reorderPoint * 1.5) return "medium";
     return "high";
@@ -162,6 +179,11 @@ export function InventoryTable({
             const orderQty = orderQuantities[product.id] || 0;
             const orderCost = orderQty * product.costPerUnit;
             const isEvenRow = index % 2 === 0;
+            
+            // Get product-specific locations
+            const productLocations = getProductLocations 
+              ? getProductLocations(product.category, product.name)
+              : showLocations;
 
             return (
               <TableRow 
@@ -171,9 +193,14 @@ export function InventoryTable({
                   "hover:bg-table-row-hover transition-colors"
                 )}
               >
-                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {product.name}
+                    {isSaving && <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />}
+                  </div>
+                </TableCell>
                 <TableCell>{product.category}</TableCell>
-                {showLocations.includes("bar") && (
+                {productLocations.includes("bar") && (
                   <TableCell>
                     {onStockChange ? (
                       <div className="flex items-center space-x-1">
@@ -223,7 +250,7 @@ export function InventoryTable({
                     )}
                   </TableCell>
                 )}
-                {showLocations.includes("cellar") && (
+                {productLocations.includes("cellar") && (
                   <TableCell>
                     {onStockChange ? (
                       <div className="flex items-center space-x-1">
@@ -273,8 +300,8 @@ export function InventoryTable({
                     )}
                   </TableCell>
                 )}
-                {showLocations.includes("holding") && <TableCell>{product.stock.holding || 0}</TableCell>}
-                {showLocations.includes("comingMon") && <TableCell>{product.stock.comingMon || 0}</TableCell>}
+                {productLocations.includes("holding") && <TableCell>{product.stock.holding || 0}</TableCell>}
+                {productLocations.includes("comingMon") && <TableCell>{product.stock.comingMon || 0}</TableCell>}
                 <TableCell className="text-center font-medium">
                   <div className="space-y-1">
                     <div className={cn("text-lg font-bold",

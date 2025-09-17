@@ -106,6 +106,11 @@ export function ProductEditDialog({
     });
   };
 
+  const isUUID = (str: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
+
   const getChangedProducts = () => {
     return Object.values(editingProducts).filter(editingProduct => {
       const originalProduct = products.find(p => p.id === editingProduct.id);
@@ -145,21 +150,99 @@ export function ProductEditDialog({
     try {
       // Update products in database
       for (const product of changedProducts) {
-        const { error } = await supabase
-          .from('products')
-          .update({
-            name: product.name,
-            category: product.category,
-            unit: product.unit,
-            current_price: product.current_price,
-            reorder_point: product.reorder_point,
-            discontinued: product.discontinued,
-          })
-          .eq('id', product.id);
+        if (isUUID(product.id)) {
+          // Product already exists in DB, update it
+          const { error } = await supabase
+            .from('products')
+            .update({
+              name: product.name,
+              category: product.category,
+              unit: product.unit,
+              current_price: product.current_price,
+              reorder_point: product.reorder_point,
+              discontinued: product.discontinued,
+            })
+            .eq('id', product.id);
 
-        if (error) {
-          console.error('Database error:', error);
-          throw new Error(`Failed to update ${product.name}: ${error.message}`);
+          if (error) {
+            console.error('Database error:', error);
+            throw new Error(`Failed to update ${product.name}: ${error.message}`);
+          }
+        } else {
+          // Product has slug ID, need to find or create in DB
+          const originalProduct = products.find(p => p.id === product.id);
+          if (!originalProduct) continue;
+
+          // Try to find existing product by supplier_id and name
+          const { data: existingProducts, error: findError } = await supabase
+            .from('products')
+            .select('id')
+            .eq('supplier_id', originalProduct.supplier_id)
+            .eq('name', originalProduct.name)
+            .limit(1);
+
+          if (findError) {
+            console.error('Error finding product:', findError);
+            throw new Error(`Failed to find product ${product.name}: ${findError.message}`);
+          }
+
+          if (existingProducts && existingProducts.length > 0) {
+            // Product exists, update it
+            const { error } = await supabase
+              .from('products')
+              .update({
+                name: product.name,
+                category: product.category,
+                unit: product.unit,
+                current_price: product.current_price,
+                reorder_point: product.reorder_point,
+                discontinued: product.discontinued,
+              })
+              .eq('id', existingProducts[0].id);
+
+            if (error) {
+              console.error('Database error:', error);
+              throw new Error(`Failed to update ${product.name}: ${error.message}`);
+            }
+          } else {
+            // Product doesn't exist, create it first then update
+            const { data: newProduct, error: insertError } = await supabase
+              .from('products')
+              .insert({
+                name: originalProduct.name,
+                category: originalProduct.category,
+                unit: originalProduct.unit,
+                current_price: originalProduct.current_price,
+                reorder_point: originalProduct.reorder_point,
+                supplier_id: originalProduct.supplier_id,
+                discontinued: false,
+              })
+              .select('id')
+              .single();
+
+            if (insertError) {
+              console.error('Error creating product:', insertError);
+              throw new Error(`Failed to create product ${product.name}: ${insertError.message}`);
+            }
+
+            // Now update with the edited values
+            const { error: updateError } = await supabase
+              .from('products')
+              .update({
+                name: product.name,
+                category: product.category,
+                unit: product.unit,
+                current_price: product.current_price,
+                reorder_point: product.reorder_point,
+                discontinued: product.discontinued,
+              })
+              .eq('id', newProduct.id);
+
+            if (updateError) {
+              console.error('Error updating new product:', updateError);
+              throw new Error(`Failed to update new product ${product.name}: ${updateError.message}`);
+            }
+          }
         }
       }
 
@@ -269,11 +352,18 @@ export function ProductEditDialog({
                     hasProductChanges ? 'border-primary bg-primary/5' : 'border-border'
                   } ${editingProduct.discontinued ? 'opacity-75 bg-muted/30' : ''}`}
                 >
-                  {editingProduct.discontinued && (
-                    <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
-                      Discontinued
-                    </Badge>
-                  )}
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    {!isUUID(product.id) && (
+                      <Badge variant="outline" className="text-xs">
+                        Not in DB yet
+                      </Badge>
+                    )}
+                    {editingProduct.discontinued && (
+                      <Badge variant="secondary" className="text-xs">
+                        Discontinued
+                      </Badge>
+                    )}
+                  </div>
                   
                   <div>
                     <Label htmlFor={`name-${product.id}`}>Product Name</Label>
@@ -282,7 +372,6 @@ export function ProductEditDialog({
                       value={editingProduct.name}
                       onChange={(e) => updateEditingProduct(product.id, 'name', e.target.value)}
                       className={`w-full ${editingProduct.discontinued ? 'line-through' : ''}`}
-                      disabled={editingProduct.discontinued}
                     />
                   </div>
                   

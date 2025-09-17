@@ -29,7 +29,7 @@ export default function BeveragesPage() {
   
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { saveDraft, submitOrder, saving, submitting } = useOrders();
+  const { saveDraft, submitOrder, saving = false, submitting = false } = useOrders();
   const { orderHistory, getLastOrderInfo } = useOrderHistory('star-pubs');
   
   // Use the stock levels hook for auto-save functionality

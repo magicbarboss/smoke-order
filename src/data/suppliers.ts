@@ -26,6 +26,22 @@ export const suppliers: Supplier[] = [
     hasVAT: true
   },
   {
+    id: "salvo",
+    name: "Salvo",
+    account: "N/A",
+    deadline: "Sunday 12pm",
+    deliveryWindow: "Monday 10am-2pm",
+    hasVAT: true
+  },
+  {
+    id: "charles-saunders",
+    name: "Charles Saunders",
+    account: "N/A",
+    deadline: "Sunday 12pm",
+    deliveryWindow: "Monday 10am-2pm",
+    hasVAT: true
+  },
+  {
     id: "cormack",
     name: "Cormack Commercial",
     account: "N/A",

@@ -10,9 +10,11 @@ import { useOrders } from "@/hooks/useOrders";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
 import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
+import { StockCountingDialog } from "@/components/inventory/StockCountingDialog";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
+import { useStockLevels } from "@/hooks/useStockLevels";
 import { suppliers } from "@/data/suppliers";
-import { Settings, History, ShoppingCart, CalendarClock, Search, Filter, Clock, Building } from "lucide-react";
+import { Settings, History, ShoppingCart, CalendarClock, Search, Filter, Clock, Building, Package } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Product {
@@ -42,6 +44,10 @@ export default function FoodPage() {
   const { submitOrder } = useOrders();
   const { orderHistory, getLastOrderInfo } = useOrderHistory("salvo-charles");
 
+  // Get product IDs for stock levels
+  const productIds = products.map(p => p.id);
+  const { stockLevels, updateStock } = useStockLevels(productIds);
+
   const supplier = suppliers.find(s => s.id === "salvo-charles");
 
   useEffect(() => {
@@ -58,7 +64,7 @@ export default function FoodPage() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('supplier_id', 'salvo-charles')
+        .in('supplier_id', ['salvo-charles', 'salvo', 'charles-saunders'])
         .order('category', { ascending: true })
         .order('name', { ascending: true });
 
@@ -90,6 +96,10 @@ export default function FoodPage() {
       ...prev,
       [productId]: quantity,
     }));
+  };
+
+  const handleStockChange = (productId: string, location: string, quantity: number) => {
+    updateStock(productId, location as 'bar' | 'cellar', quantity);
   };
 
   const handleCreateOrder = async () => {
@@ -163,6 +173,19 @@ export default function FoodPage() {
           <p className="text-muted-foreground">Food ordering list - Via App by 8pm night before</p>
         </div>
         <div className="flex gap-2">
+          <StockCountingDialog
+            products={filteredProducts}
+            stockLevels={Object.fromEntries(
+              Object.entries(stockLevels).map(([id, levels]) => [
+                id,
+                { bar: levels.bar || 0, cellar: levels.cellar || 0 }
+              ])
+            )}
+            onStockChange={handleStockChange}
+            getCategoryGroup={(category) => category.toUpperCase()}
+            getProductLocations={(category) => ['bar', 'cellar']}
+          />
+
           <OrderHistoryDialog 
             supplierId="salvo-charles"
             supplierName={supplier?.name || "Salvo & Charles"}
@@ -253,7 +276,14 @@ export default function FoodPage() {
               products={filteredProducts}
               orderQuantities={orderQuantities}
               onQuantityChange={handleQuantityChange}
-              showLocations={["holding"]}
+              showLocations={["bar", "cellar"]}
+              onStockChange={handleStockChange}
+              stockLevels={Object.fromEntries(
+                Object.entries(stockLevels).map(([id, levels]) => [
+                  id,
+                  { bar: levels.bar || 0, cellar: levels.cellar || 0 }
+                ])
+              )}
               orderHistory={Object.fromEntries(
                 filteredProducts.map(product => [
                   product.id,

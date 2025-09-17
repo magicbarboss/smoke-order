@@ -40,6 +40,7 @@ interface EditingProduct {
   unit: string;
   current_price: number;
   reorder_point: number;
+  supplier_id: string;
   discontinued: boolean;
 }
 
@@ -76,6 +77,7 @@ export function ProductEditDialog({
           unit: product.unit,
           current_price: product.current_price,
           reorder_point: Math.round(product.reorder_point || 0),
+          supplier_id: product.supplier_id,
           discontinued: product.discontinued || false,
         };
       });
@@ -241,6 +243,7 @@ export function ProductEditDialog({
                 unit: product.unit,
                 current_price: product.current_price,
                 reorder_point: Math.round(product.reorder_point || 0),
+                supplier_id: product.supplier_id,
                 discontinued: product.discontinued,
               })
               .eq('id', existingProducts[0].id);
@@ -429,6 +432,23 @@ export function ProductEditDialog({
                       options={existingCategories}
                       placeholder="Select or add category..."
                     />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`supplier-${product.id}`}>Supplier</Label>
+                    <Select
+                      value={editingProduct.supplier_id}
+                      onValueChange={(value) => updateEditingProduct(product.id, 'supplier_id', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select supplier..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="salvo-charles">Salvo & Charles Saunders</SelectItem>
+                        <SelectItem value="salvo">Salvo</SelectItem>
+                        <SelectItem value="charles-saunders">Charles Saunders</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div>

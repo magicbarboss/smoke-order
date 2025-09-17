@@ -12,7 +12,8 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const [resetLoading, setResetLoading] = useState(false);
+  const { signIn, signUp, user, resetPassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -67,6 +68,36 @@ export default function AuthPage() {
     setLoading(false);
   };
 
+  const handlePasswordReset = async () => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResetLoading(true);
+    
+    const { error } = await resetPassword(email);
+    
+    if (error) {
+      toast({
+        title: "Reset Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Reset Email Sent!",
+        description: "Check your email for password reset instructions.",
+      });
+    }
+    
+    setResetLoading(false);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
@@ -105,6 +136,18 @@ export default function AuthPage() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Signing In...' : 'Sign In'}
                 </Button>
+                
+                <div className="text-center mt-4">
+                  <Button 
+                    type="button"
+                    variant="link" 
+                    onClick={handlePasswordReset} 
+                    disabled={resetLoading}
+                    className="text-sm"
+                  >
+                    {resetLoading ? 'Sending...' : 'Forgot Password?'}
+                  </Button>
+                </div>
               </form>
             </TabsContent>
             

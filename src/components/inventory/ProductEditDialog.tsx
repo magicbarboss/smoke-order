@@ -5,9 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EditableSelect } from "@/components/ui/editable-select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings } from "lucide-react";
+import { Settings, Eye, EyeOff } from "lucide-react";
 
 interface Product {
   id: string;
@@ -17,6 +20,9 @@ interface Product {
   current_price: number;
   reorder_point: number;
   supplier_id: string;
+  discontinued?: boolean;
+  discontinued_at?: string;
+  discontinued_by?: string;
 }
 
 interface ProductEditDialogProps {
@@ -34,6 +40,7 @@ interface EditingProduct {
   unit: string;
   current_price: number;
   reorder_point: number;
+  discontinued: boolean;
 }
 
 const commonUnits = [
@@ -52,7 +59,9 @@ export function ProductEditDialog({
   const [updating, setUpdating] = useState(false);
   const [searchFilter, setSearchFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [showDiscontinued, setShowDiscontinued] = useState(false);
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
@@ -66,13 +75,14 @@ export function ProductEditDialog({
           unit: product.unit,
           current_price: product.current_price,
           reorder_point: product.reorder_point,
+          discontinued: product.discontinued || false,
         };
       });
       setEditingProducts(initialEditingProducts);
     }
   }, [isOpen, products]);
 
-  const updateEditingProduct = (productId: string, field: keyof EditingProduct, value: string | number) => {
+  const updateEditingProduct = (productId: string, field: keyof EditingProduct, value: string | number | boolean) => {
     setEditingProducts(prev => ({
       ...prev,
       [productId]: {
@@ -90,7 +100,8 @@ export function ProductEditDialog({
         originalProduct.category !== editingProduct.category ||
         originalProduct.unit !== editingProduct.unit ||
         originalProduct.current_price !== editingProduct.current_price ||
-        originalProduct.reorder_point !== editingProduct.reorder_point
+        originalProduct.reorder_point !== editingProduct.reorder_point ||
+        (originalProduct.discontinued || false) !== editingProduct.discontinued
       );
     });
   };
@@ -103,12 +114,23 @@ export function ProductEditDialog({
         originalProduct.category !== editingProduct.category ||
         originalProduct.unit !== editingProduct.unit ||
         originalProduct.current_price !== editingProduct.current_price ||
-        originalProduct.reorder_point !== editingProduct.reorder_point
+        originalProduct.reorder_point !== editingProduct.reorder_point ||
+        (originalProduct.discontinued || false) !== editingProduct.discontinued
       );
     });
   };
 
   const handleSaveChanges = async () => {
+    // Check authentication first
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to edit products.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const changedProducts = getChangedProducts();
     
     if (changedProducts.length === 0) {
@@ -131,10 +153,14 @@ export function ProductEditDialog({
             unit: product.unit,
             current_price: product.current_price,
             reorder_point: product.reorder_point,
+            discontinued: product.discontinued,
           })
           .eq('id', product.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Database error:', error);
+          throw new Error(`Failed to update ${product.name}: ${error.message}`);
+        }
       }
 
       toast({
@@ -148,7 +174,7 @@ export function ProductEditDialog({
       console.error('Error updating products:', error);
       toast({
         title: "Error",
-        description: "Failed to update products. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update products. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -160,7 +186,8 @@ export function ProductEditDialog({
     const matchesSearch = product.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
                          product.category.toLowerCase().includes(searchFilter.toLowerCase());
     const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesDiscontinued = showDiscontinued || !product.discontinued;
+    return matchesSearch && matchesCategory && matchesDiscontinued;
   });
 
   const defaultTrigger = (
@@ -182,7 +209,7 @@ export function ProductEditDialog({
         
         <div className="space-y-4">
           {/* Filters */}
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-end">
             <div className="flex-1">
               <Label htmlFor="search-filter">Search Products</Label>
               <Input
@@ -208,6 +235,17 @@ export function ProductEditDialog({
                 </SelectContent>
               </Select>
             </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-discontinued"
+                checked={showDiscontinued}
+                onCheckedChange={setShowDiscontinued}
+              />
+              <Label htmlFor="show-discontinued" className="flex items-center space-x-1">
+                {showDiscontinued ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                <span>Show Discontinued</span>
+              </Label>
+            </div>
           </div>
 
           {/* Products Grid */}
@@ -221,22 +259,30 @@ export function ProductEditDialog({
                 product.category !== editingProduct.category ||
                 product.unit !== editingProduct.unit ||
                 product.current_price !== editingProduct.current_price ||
-                product.reorder_point !== editingProduct.reorder_point;
+                product.reorder_point !== editingProduct.reorder_point ||
+                (product.discontinued || false) !== editingProduct.discontinued;
 
               return (
                 <div 
                   key={product.id} 
-                  className={`grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg ${
+                  className={`grid grid-cols-1 md:grid-cols-6 gap-4 p-4 border rounded-lg relative ${
                     hasProductChanges ? 'border-primary bg-primary/5' : 'border-border'
-                  }`}
+                  } ${editingProduct.discontinued ? 'opacity-75 bg-muted/30' : ''}`}
                 >
+                  {editingProduct.discontinued && (
+                    <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
+                      Discontinued
+                    </Badge>
+                  )}
+                  
                   <div>
                     <Label htmlFor={`name-${product.id}`}>Product Name</Label>
                     <Input
                       id={`name-${product.id}`}
                       value={editingProduct.name}
                       onChange={(e) => updateEditingProduct(product.id, 'name', e.target.value)}
-                      className="w-full"
+                      className={`w-full ${editingProduct.discontinued ? 'line-through' : ''}`}
+                      disabled={editingProduct.discontinued}
                     />
                   </div>
                   
@@ -258,6 +304,7 @@ export function ProductEditDialog({
                       onChange={(e) => updateEditingProduct(product.id, 'unit', e.target.value)}
                       className="w-full"
                       list={`units-${product.id}`}
+                      disabled={editingProduct.discontinued}
                     />
                     <datalist id={`units-${product.id}`}>
                       {commonUnits.map(unit => (
@@ -276,6 +323,7 @@ export function ProductEditDialog({
                       value={editingProduct.current_price}
                       onChange={(e) => updateEditingProduct(product.id, 'current_price', parseFloat(e.target.value) || 0)}
                       className="w-full"
+                      disabled={editingProduct.discontinued}
                     />
                   </div>
                   
@@ -288,7 +336,22 @@ export function ProductEditDialog({
                       value={editingProduct.reorder_point}
                       onChange={(e) => updateEditingProduct(product.id, 'reorder_point', parseInt(e.target.value) || 0)}
                       className="w-full"
+                      disabled={editingProduct.discontinued}
                     />
+                  </div>
+                  
+                  <div className="flex flex-col justify-end">
+                    <Label htmlFor={`discontinued-${product.id}`}>Status</Label>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Switch
+                        id={`discontinued-${product.id}`}
+                        checked={editingProduct.discontinued}
+                        onCheckedChange={(checked) => updateEditingProduct(product.id, 'discontinued', checked)}
+                      />
+                      <Label htmlFor={`discontinued-${product.id}`} className="text-sm">
+                        {editingProduct.discontinued ? 'Discontinued' : 'Active'}
+                      </Label>
+                    </div>
                   </div>
                 </div>
               );

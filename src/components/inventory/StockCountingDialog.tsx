@@ -151,13 +151,13 @@ export function StockCountingDialog({
           </Card>
 
           {/* Product List */}
-          <Card className="flex-1 overflow-hidden">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="pb-3">
+              <h3 className="text-lg font-semibold">
                 Products in {selectedLocation} ({filteredProducts.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="overflow-y-auto flex-1 space-y-3">
+              </h3>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2">
               {filteredProducts.map((product) => {
                 const currentStock = stockLevels[product.id]?.[selectedLocation] || 0;
                 const categoryGroup = getCategoryGroup(product.category, product.name);
@@ -253,8 +253,8 @@ export function StockCountingDialog({
                   No products found for {selectedLocation} location
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

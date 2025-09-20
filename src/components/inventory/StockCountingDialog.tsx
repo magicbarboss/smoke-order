@@ -76,7 +76,7 @@ export function StockCountingDialog({
           Stock Count
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-4xl h-[85vh] flex flex-col">
+      <DialogContent className="w-screen sm:w-[95vw] max-w-4xl h-[calc(100dvh-2rem)] sm:h-[85vh] p-0 sm:p-6 overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-primary" />
@@ -157,7 +157,7 @@ export function StockCountingDialog({
                 Products in {selectedLocation} ({filteredProducts.length})
               </h3>
             </div>
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1 md:pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y space-y-3 pr-1 md:pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
               {filteredProducts.map((product) => {
                 const currentStock = stockLevels[product.id]?.[selectedLocation] || 0;
                 const categoryGroup = getCategoryGroup(product.category, product.name);

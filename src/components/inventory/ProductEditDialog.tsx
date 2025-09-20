@@ -323,15 +323,15 @@ export function ProductEditDialog({
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] md:w-[90vw] lg:max-w-4xl xl:max-w-6xl max-h-[85vh] md:max-h-[90vh] flex flex-col min-h-0">
         <DialogHeader>
           <DialogTitle>Edit Products - {supplierName}</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="flex-1 space-y-4 overflow-hidden">
           {/* Filters */}
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-end px-1">
+            <div className="flex-1 w-full">
               <Label htmlFor="search-filter">Search Products</Label>
               <Input
                 id="search-filter"
@@ -340,7 +340,7 @@ export function ProductEditDialog({
                 onChange={(e) => setSearchFilter(e.target.value)}
               />
             </div>
-            <div className="min-w-[200px]">
+            <div className="w-full md:min-w-[200px] md:w-auto">
               <Label htmlFor="category-filter">Filter by Category</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
@@ -356,7 +356,7 @@ export function ProductEditDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 py-2">
               <Switch
                 id="show-discontinued"
                 checked={showDiscontinued}
@@ -370,7 +370,8 @@ export function ProductEditDialog({
           </div>
 
           {/* Products Grid */}
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-1 -webkit-overflow-scrolling-touch" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="space-y-4 pb-4">
             {filteredProducts.map(product => {
               const editingProduct = editingProducts[product.id];
               if (!editingProduct) return null;
@@ -386,7 +387,7 @@ export function ProductEditDialog({
               return (
                 <div 
                   key={product.id} 
-                  className={`grid grid-cols-1 md:grid-cols-6 gap-4 p-4 border rounded-lg relative ${
+                  className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-4 border rounded-lg relative ${
                     hasProductChanges ? 'border-primary bg-primary/5' : 'border-border'
                   } ${editingProduct.discontinued ? 'opacity-75 bg-muted/30' : ''}`}
                 >
@@ -403,7 +404,7 @@ export function ProductEditDialog({
                     )}
                   </div>
                   
-                  <div>
+                  <div className="sm:col-span-2 lg:col-span-1">
                     <Label htmlFor={`name-${product.id}`}>Product Name</Label>
                     <Input
                       id={`name-${product.id}`}
@@ -484,7 +485,7 @@ export function ProductEditDialog({
                     />
                   </div>
                   
-                  <div className="flex flex-col justify-end">
+                  <div className="flex flex-col justify-end sm:col-span-2 lg:col-span-3 xl:col-span-1">
                     <Label htmlFor={`discontinued-${product.id}`}>Status</Label>
                     <div className="flex items-center space-x-2 mt-2">
                       <Switch
@@ -500,6 +501,7 @@ export function ProductEditDialog({
                 </div>
               );
             })}
+            </div>
           </div>
 
           {filteredProducts.length === 0 && (
@@ -509,7 +511,7 @@ export function ProductEditDialog({
           )}
 
           {/* Actions */}
-          <div className="flex justify-between items-center pt-4 border-t">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4 border-t">
             <div className="text-sm text-muted-foreground">
               {hasChanges() ? (
                 `${getChangedProducts().length} product(s) with changes`

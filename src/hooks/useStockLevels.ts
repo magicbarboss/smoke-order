@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useDebounce } from '@/hooks/useDebounce';
+
 
 interface StockLocation {
   bar: number;
@@ -17,13 +17,10 @@ interface UseStockLevelsReturn {
 
 export function useStockLevels(productIds: string[]): UseStockLevelsReturn {
   const [stockLevels, setStockLevels] = useState<Record<string, StockLocation>>({});
-  const [pendingUpdates, setPendingUpdates] = useState<Record<string, StockLocation>>({});
+  
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-
-  // Debounce the pending updates to batch saves
-  const debouncedUpdates = useDebounce(pendingUpdates, 1000);
 
   // Load initial stock levels
   useEffect(() => {
@@ -70,61 +67,6 @@ export function useStockLevels(productIds: string[]): UseStockLevelsReturn {
     loadStockLevels();
   }, [productIds.join(','), toast]);
 
-  // Save debounced updates to database
-  useEffect(() => {
-    const saveUpdates = async () => {
-      if (Object.keys(debouncedUpdates).length === 0) return;
-
-      try {
-        setIsSaving(true);
-        
-        // Prepare upsert data
-        const upsertData = [];
-        for (const [productId, levels] of Object.entries(debouncedUpdates)) {
-          upsertData.push(
-            {
-              product_id: productId,
-              location: 'bar',
-              quantity: levels.bar
-            },
-            {
-              product_id: productId,
-              location: 'cellar', 
-              quantity: levels.cellar
-            }
-          );
-        }
-
-        const { error } = await supabase
-          .from('stock_levels')
-          .upsert(upsertData, { 
-            onConflict: 'product_id,location',
-            ignoreDuplicates: false 
-          });
-
-        if (error) throw error;
-
-        // Clear pending updates after successful save
-        setPendingUpdates({});
-        
-        toast({
-          title: "Stock Updated",
-          description: "Stock levels saved successfully",
-        });
-      } catch (error) {
-        console.error('Error saving stock levels:', error);
-        toast({
-          title: "Error",
-          description: "Failed to save stock levels",
-          variant: "destructive",
-        });
-      } finally {
-        setIsSaving(false);
-      }
-    };
-
-    saveUpdates();
-  }, [debouncedUpdates, toast]);
 
   const updateStock = useCallback((productId: string, location: 'bar' | 'cellar', quantity: number) => {
     // Update local state immediately for responsive UI
@@ -136,16 +78,29 @@ export function useStockLevels(productIds: string[]): UseStockLevelsReturn {
       }
     }));
 
-    // Queue for database save
-    setPendingUpdates(prev => ({
-      ...prev,
-      [productId]: {
-        ...prev[productId],
-        bar: location === 'bar' ? quantity : prev[productId]?.bar ?? stockLevels[productId]?.bar ?? 0,
-        cellar: location === 'cellar' ? quantity : prev[productId]?.cellar ?? stockLevels[productId]?.cellar ?? 0
+    // Save immediately to the database (no debounce, no local storage)
+    (async () => {
+      try {
+        setIsSaving(true);
+        const { error } = await supabase
+          .from('stock_levels')
+          .upsert(
+            { product_id: productId, location, quantity },
+            { onConflict: 'product_id,location', ignoreDuplicates: false }
+          );
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error saving stock level:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to save stock level',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsSaving(false);
       }
-    }));
-  }, [stockLevels]);
+    })();
+  }, [stockLevels, toast]);
 
   return {
     stockLevels,

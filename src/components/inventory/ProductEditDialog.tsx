@@ -323,7 +323,7 @@ export function ProductEditDialog({
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="w-[95vw] md:w-[90vw] lg:max-w-4xl xl:max-w-6xl max-h-[85vh] md:max-h-[90vh] flex flex-col min-h-0">
+      <DialogContent className="w-[95vw] max-w-5xl h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Edit Products - {supplierName}</DialogTitle>
         </DialogHeader>

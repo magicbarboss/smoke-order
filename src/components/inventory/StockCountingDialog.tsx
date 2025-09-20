@@ -76,7 +76,7 @@ export function StockCountingDialog({
           Stock Count
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] md:w-[90vw] lg:max-w-4xl xl:max-w-5xl max-h-[85dvh] md:max-h-[90dvh] flex flex-col min-h-0">
+      <DialogContent className="w-[95vw] max-w-4xl h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-primary" />

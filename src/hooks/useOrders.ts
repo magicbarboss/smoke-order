@@ -17,34 +17,66 @@ export function useOrders() {
 
   const saveDraft = async (supplierId: string, items: OrderItem[], totalCost: number) => {
     setSaving(true);
+    console.log('Starting saveDraft:', { supplierId, itemsCount: items.length, totalCost });
+    
     try {
-      // First, create or update the order
-      const { data: order, error: orderError } = await supabase
+      // Check for existing draft order for this supplier and user
+      const { data: existingDraft } = await supabase
         .from('orders')
-        .upsert({
-          user_id: PUBLIC_USER_ID,
-          supplier_id: supplierId,
-          status: 'draft',
-          total_cost: totalCost,
-          order_date: new Date().toISOString().split('T')[0],
-        })
-        .select()
-        .single();
+        .select('id')
+        .eq('user_id', PUBLIC_USER_ID)
+        .eq('supplier_id', supplierId)
+        .eq('status', 'draft')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (orderError) throw orderError;
+      let orderId: string;
+      
+      if (existingDraft && existingDraft.length > 0) {
+        // Update existing draft
+        const { error: updateError } = await supabase
+          .from('orders')
+          .update({
+            total_cost: totalCost,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingDraft[0].id);
+
+        if (updateError) throw updateError;
+        orderId = existingDraft[0].id;
+        console.log('Updated existing draft order:', orderId);
+      } else {
+        // Create new draft order
+        const { data: newOrder, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            user_id: PUBLIC_USER_ID,
+            supplier_id: supplierId,
+            status: 'draft',
+            total_cost: totalCost,
+            order_date: new Date().toISOString().split('T')[0],
+          })
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+        orderId = newOrder.id;
+        console.log('Created new draft order:', orderId);
+      }
 
       // Delete existing order items for this order
       const { error: deleteError } = await supabase
         .from('order_items')
         .delete()
-        .eq('order_id', order.id);
+        .eq('order_id', orderId);
 
       if (deleteError) throw deleteError;
 
       // Insert new order items
       if (items.length > 0) {
+        console.log('Inserting order items:', items.length);
         const orderItems = items.map(item => ({
-          order_id: order.id,
+          order_id: orderId,
           product_id: item.productId,
           quantity: item.quantity,
           unit_price: item.unitPrice,
@@ -56,19 +88,21 @@ export function useOrders() {
           .insert(orderItems);
 
         if (itemsError) throw itemsError;
+        console.log('Successfully inserted order items');
       }
 
       toast({
         title: "Draft Saved",
-        description: "Your order has been saved as a draft.",
+        description: "Your order has been saved as a draft and synced across devices.",
       });
 
-      return { success: true, orderId: order.id };
+      return { success: true, orderId };
     } catch (error) {
       console.error('Error saving draft:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
         title: "Error",
-        description: "Failed to save draft. Please try again.",
+        description: `Failed to save draft: ${errorMessage}. Please try again.`,
         variant: "destructive",
       });
       return { success: false, error };
@@ -79,50 +113,97 @@ export function useOrders() {
 
   const submitOrder = async (supplierId: string, items: OrderItem[], totalCost: number) => {
     setSubmitting(true);
+    console.log('Starting submitOrder:', { supplierId, itemsCount: items.length, totalCost });
+    
     try {
-      // Create the order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: PUBLIC_USER_ID,
-          supplier_id: supplierId,
-          status: 'submitted',
-          total_cost: totalCost,
-          order_date: new Date().toISOString().split('T')[0],
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Insert order items
-      if (items.length > 0) {
-        const orderItems = items.map(item => ({
-          order_id: order.id,
-          product_id: item.productId,
-          quantity: item.quantity,
-          unit_price: item.unitPrice,
-          total_price: item.totalPrice,
-        }));
-
-        const { error: itemsError } = await supabase
-          .from('order_items')
-          .insert(orderItems);
-
-        if (itemsError) throw itemsError;
+      // Validate order items
+      if (!items || items.length === 0) {
+        throw new Error('Cannot submit order with no items');
       }
+
+      // Check if there's an existing draft to convert
+      const { data: existingDraft } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('user_id', PUBLIC_USER_ID)
+        .eq('supplier_id', supplierId)
+        .eq('status', 'draft')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      let orderId: string;
+
+      if (existingDraft && existingDraft.length > 0) {
+        // Convert existing draft to submitted order
+        const { error: updateError } = await supabase
+          .from('orders')
+          .update({
+            status: 'submitted',
+            total_cost: totalCost,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingDraft[0].id);
+
+        if (updateError) throw updateError;
+        orderId = existingDraft[0].id;
+        console.log('Converted draft to submitted order:', orderId);
+      } else {
+        // Create new submitted order
+        const { data: order, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            user_id: PUBLIC_USER_ID,
+            supplier_id: supplierId,
+            status: 'submitted',
+            total_cost: totalCost,
+            order_date: new Date().toISOString().split('T')[0],
+          })
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+        orderId = order.id;
+        console.log('Created new submitted order:', orderId);
+      }
+
+      // Ensure order items are up to date
+      // Delete existing order items first
+      const { error: deleteError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', orderId);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new order items
+      console.log('Inserting order items for submission:', items.length);
+      const orderItems = items.map(item => ({
+        order_id: orderId,
+        product_id: item.productId,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        total_price: item.totalPrice,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+      console.log('Successfully submitted order with items');
 
       toast({
         title: "Order Submitted",
-        description: "Your order has been successfully submitted.",
+        description: `Your order has been successfully submitted with ${items.length} items totaling £${totalCost.toFixed(2)}.`,
       });
 
-      return { success: true, orderId: order.id };
+      return { success: true, orderId };
     } catch (error) {
       console.error('Error submitting order:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
         title: "Error",
-        description: "Failed to submit order. Please try again.",
+        description: `Failed to submit order: ${errorMessage}. Please check your items and try again.`,
         variant: "destructive",
       });
       return { success: false, error };

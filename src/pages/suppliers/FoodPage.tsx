@@ -13,7 +13,7 @@ import { StockCountingDialog } from "@/components/inventory/StockCountingDialog"
 import { useOrderHistory } from "@/hooks/useOrderHistory";
 import { useStockLevels } from "@/hooks/useStockLevels";
 import { suppliers } from "@/data/suppliers";
-import { Settings, History, ShoppingCart, CalendarClock, Search, Filter, Clock, Building, Package } from "lucide-react";
+import { Settings, History, ShoppingCart, CalendarClock, Search, Filter, Clock, Building, Package, Calculator } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Product {
@@ -168,18 +168,17 @@ export default function FoodPage() {
           <p className="text-sm md:text-base text-muted-foreground">Food ordering list - Via App by 8pm night before</p>
         </div>
         <div className="flex gap-2">
-          <StockCountingDialog
-            products={filteredProducts}
-            stockLevels={Object.fromEntries(
-              Object.entries(stockLevels).map(([id, levels]) => [
-                id,
-                { bar: levels.bar || 0, cellar: levels.cellar || 0 }
-              ])
-            )}
-            onStockChange={handleStockChange}
-            getCategoryGroup={(category) => category.toUpperCase()}
-            getProductLocations={(category) => ['bar', 'cellar']}
-          />
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <a href="/stock-count" className="flex items-center gap-2">
+                <Calculator className="h-4 w-4" />
+                Full Stock Count
+              </a>
+            </Button>
 
           <OrderHistoryDialog 
             supplierId="salvo-charles"

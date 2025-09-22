@@ -41,21 +41,19 @@ export function OrderHistoryDialog({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isOpen && user) {
+    if (isOpen) {
       fetchOrderHistory();
     }
-  }, [isOpen, user, dateRange, supplierId]);
+  }, [isOpen, dateRange, supplierId]);
 
   const fetchOrderHistory = async () => {
-    if (!user) return;
-    
     setLoading(true);
     try {
       const daysBack = parseInt(dateRange);
       const startDate = startOfDay(subDays(new Date(), daysBack));
       const endDate = endOfDay(new Date());
 
-      // Fetch orders with items for this supplier and date range
+      // Fetch orders with items for this supplier and date range (removed user_id filter)
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select(`
@@ -73,7 +71,6 @@ export function OrderHistoryDialog({
             )
           )
         `)
-        .eq('user_id', user.id)
         .eq('supplier_id', supplierId)
         .gte('order_date', format(startDate, 'yyyy-MM-dd'))
         .lte('order_date', format(endDate, 'yyyy-MM-dd'))

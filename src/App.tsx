@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import BeveragesPage from "./pages/suppliers/BeveragesPage";
 import SpiritsPage from "./pages/suppliers/SpiritsPage";
 import FoodPage from "./pages/suppliers/FoodPage";
+import Orders from "./pages/Orders";
+import StockCount from "./pages/StockCount";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const AppContent = () => {
           <div className="flex-1 p-6">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/stock-count" element={<StockCount />} />
               <Route path="/beverages" element={<BeveragesPage />} />
               <Route path="/spirits" element={<SpiritsPage />} />
               <Route path="/food" element={<FoodPage />} />

@@ -5,7 +5,8 @@ import {
   UtensilsCrossed, 
   SprayCan, 
   GraduationCap,
-  BarChart3
+  BarChart3,
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,6 +25,12 @@ const navigationItems = [
     title: "Dashboard",
     url: "/",
     icon: BarChart3,
+  },
+  {
+    title: "Orders",
+    url: "/orders",
+    icon: FileText,
+    supplier: "All Suppliers",
   },
   {
     title: "Beverages",

@@ -76,7 +76,7 @@ export function StockCountingDialog({
           Stock Count
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-screen sm:w-[95vw] max-w-4xl h-[calc(100dvh-2rem)] sm:h-[85vh] p-0 sm:p-6 overflow-hidden flex flex-col">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-4xl max-h-[90vh] sm:max-h-[85vh] mx-auto p-4 sm:p-6 overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-primary" />
@@ -206,22 +206,32 @@ export function StockCountingDialog({
                         size="sm"
                         onClick={() => handleQuickAdd(product.id, -1)}
                         disabled={currentStock < 1}
-                        className="h-6 w-6 p-0 rounded"
+                        className="h-8 w-8 p-0 rounded touch-manipulation active:scale-95 transition-transform"
                       >
-                        <Minus className="h-2 w-2" />
+                        <Minus className="h-3 w-3" />
                       </Button>
 
                       {/* Stock input */}
                       <Input
                         type="number"
-                        value={currentStock}
+                        value={currentStock === 0 ? "" : currentStock.toString()}
                         onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          handleStockUpdate(product.id, value);
+                          const value = e.target.value;
+                          if (value === "") {
+                            handleStockUpdate(product.id, 0);
+                          } else {
+                            const numValue = parseFloat(value);
+                            if (!isNaN(numValue)) {
+                              handleStockUpdate(product.id, numValue);
+                            }
+                          }
                         }}
-                        className="w-12 sm:w-14 h-6 text-center text-xs font-bold px-1"
+                        onFocus={(e) => e.target.select()}
+                        placeholder="0"
+                        className="w-14 sm:w-16 h-8 sm:h-9 text-center text-sm font-bold px-1 touch-manipulation"
                         step={isDecimal ? "0.1" : "1"}
                         min="0"
+                        inputMode="decimal"
                       />
 
                       {/* Quick add */}
@@ -229,9 +239,9 @@ export function StockCountingDialog({
                         variant="outline"
                         size="sm"
                         onClick={() => handleQuickAdd(product.id, 1)}
-                        className="h-6 w-6 p-0 rounded"
+                        className="h-8 w-8 p-0 rounded touch-manipulation active:scale-95 transition-transform"
                       >
-                        <Plus className="h-2 w-2" />
+                        <Plus className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>

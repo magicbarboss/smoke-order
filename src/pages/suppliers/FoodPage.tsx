@@ -3,18 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrders } from "@/hooks/useOrders";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
 import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
-import { StockCountingDialog } from "@/components/inventory/StockCountingDialog";
 import { useOrderHistory } from "@/hooks/useOrderHistory";
 import { useStockLevels } from "@/hooks/useStockLevels";
 import { suppliers } from "@/data/suppliers";
-import { Settings, History, ShoppingCart, CalendarClock, Search, Filter, Clock, Building, Package, Calculator } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Settings, 
+  History, 
+  ShoppingCart, 
+  CalendarClock, 
+  Search, 
+  Filter, 
+  Clock, 
+  Building, 
+  Package, 
+  Calculator 
+} from "lucide-react";
 
 interface Product {
   id: string;

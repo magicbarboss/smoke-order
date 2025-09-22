@@ -35,7 +35,8 @@ export function StockCountingDialog({
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<'bar' | 'cellar'>('cellar');
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const getKey = (id: string) => `${id}:${selectedLocation}`;
   // Filter products based on location and search
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
@@ -59,15 +60,40 @@ export function StockCountingDialog({
 
   const handleQuickAdd = (productId: string, amount: number) => {
     const currentStock = stockLevels[productId]?.[selectedLocation] || 0;
-    handleStockUpdate(productId, currentStock + amount);
+    const next = Math.max(0, currentStock + amount);
+    handleStockUpdate(productId, next);
+    const key = getKey(productId);
+    setDrafts((prev) => {
+      const { [key]: _, ...rest } = prev;
+      return rest;
+    });
+  };
+  const commitDraft = (productId: string) => {
+    const key = getKey(productId);
+    const raw = drafts[key];
+    const parsed = raw === "" || raw == null ? 0 : parseFloat(raw);
+    const next = isNaN(parsed) || parsed < 0 ? 0 : parsed;
+    handleStockUpdate(productId, next);
+    setDrafts((prev) => {
+      const { [key]: _, ...rest } = prev;
+      return rest;
+    });
   };
 
   const resetLocation = () => {
     filteredProducts.forEach(product => {
       handleStockUpdate(product.id, 0);
     });
+    // Clear drafts for current location
+    setDrafts((prev) => {
+      const updated = { ...prev } as Record<string, string>;
+      filteredProducts.forEach((p) => {
+        const key = getKey(p.id);
+        delete updated[key];
+      });
+      return updated;
+    });
   };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -76,7 +102,7 @@ export function StockCountingDialog({
           Stock Count
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-full max-w-[95vw] sm:max-w-4xl max-h-[90vh] sm:max-h-[85vh] mx-auto p-4 sm:p-6 overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-4xl mx-auto p-4 sm:p-6 overflow-hidden flex h-full sm:h-auto flex-col rounded-none sm:rounded-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-primary" />
@@ -89,7 +115,7 @@ export function StockCountingDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+        <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0">
           {/* Location Selection */}
           <Card>
             <CardHeader className="pb-3">
@@ -171,7 +197,7 @@ export function StockCountingDialog({
                 const currentStock = stockLevels[product.id]?.[selectedLocation] || 0;
                 const categoryGroup = getCategoryGroup(product.category, product.name);
                 const isDecimal = categoryGroup === 'POST-MIX' || categoryGroup === 'DRAUGHT';
-
+                const inputKey = getKey(product.id);
                 return (
                   <div 
                     key={product.id} 
@@ -213,25 +239,21 @@ export function StockCountingDialog({
 
                       {/* Stock input */}
                       <Input
-                        type="number"
-                        value={currentStock === 0 ? "" : currentStock.toString()}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === "") {
-                            handleStockUpdate(product.id, 0);
-                          } else {
-                            const numValue = parseFloat(value);
-                            if (!isNaN(numValue)) {
-                              handleStockUpdate(product.id, numValue);
-                            }
+                        type="text"
+                        value={drafts[inputKey] ?? (currentStock === 0 ? "" : currentStock.toString())}
+                        onChange={(e) => setDrafts((d) => ({ ...d, [inputKey]: e.target.value }))}
+                        onBlur={() => commitDraft(product.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            commitDraft(product.id)
                           }
                         }}
-                        onFocus={(e) => e.target.select()}
+                        onFocus={(e) => e.currentTarget.select()}
                         placeholder="0"
-                        className="w-14 sm:w-16 h-8 sm:h-9 text-center text-sm font-bold px-1 touch-manipulation"
-                        step={isDecimal ? "0.1" : "1"}
-                        min="0"
-                        inputMode="decimal"
+                        className="w-16 sm:w-20 h-9 sm:h-10 text-center text-sm font-bold px-1 touch-manipulation"
+                        inputMode={isDecimal ? "decimal" : "numeric"}
+                        autoComplete="off"
                       />
 
                       {/* Quick add */}

@@ -157,94 +157,84 @@ export function StockCountingDialog({
                 Products in {selectedLocation} ({filteredProducts.length})
               </h3>
             </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y space-y-3 pr-1 md:pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {filteredProducts.map((product) => {
+            
+            {/* Table Header */}
+            <div className="grid grid-cols-12 gap-2 py-2 px-3 bg-muted/50 rounded-t-lg border text-xs sm:text-sm font-medium text-muted-foreground">
+              <div className="col-span-5 sm:col-span-6">Product</div>
+              <div className="col-span-2 text-center">Category</div>
+              <div className="col-span-2 text-center">Unit</div>
+              <div className="col-span-3 sm:col-span-2 text-center">Stock Count</div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y border-x border-b rounded-b-lg" style={{ WebkitOverflowScrolling: 'touch' }}>
+              {filteredProducts.map((product, index) => {
                 const currentStock = stockLevels[product.id]?.[selectedLocation] || 0;
                 const categoryGroup = getCategoryGroup(product.category, product.name);
                 const isDecimal = categoryGroup === 'POST-MIX' || categoryGroup === 'DRAUGHT';
 
                 return (
-                  <Card key={product.id} className="border">
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-foreground text-sm sm:text-base leading-tight">
-                            {product.name}
-                          </h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary" className="text-xs">
-                              {categoryGroup}
-                            </Badge>
-                            <span className="text-xs sm:text-sm text-muted-foreground">
-                              {product.unit}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-center gap-2 sm:gap-3">
-                          {/* Quick subtract buttons */}
-                          <div className="flex gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleQuickAdd(product.id, -10)}
-                              disabled={currentStock < 10}
-                              className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-xs"
-                            >
-                              -10
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleQuickAdd(product.id, -1)}
-                              disabled={currentStock < 1}
-                              className="h-7 w-7 sm:h-8 sm:w-8 p-0"
-                            >
-                              <Minus className="h-2 w-2 sm:h-3 sm:w-3" />
-                            </Button>
-                          </div>
-
-                          {/* Stock input */}
-                          <div className="text-center">
-                            <Input
-                              type="number"
-                              value={currentStock}
-                              onChange={(e) => {
-                                const value = parseFloat(e.target.value) || 0;
-                                handleStockUpdate(product.id, value);
-                              }}
-                              className="w-14 sm:w-16 md:w-20 text-center text-sm sm:text-base md:text-lg font-bold"
-                              step={isDecimal ? "0.1" : "1"}
-                              min="0"
-                            />
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Stock
-                            </p>
-                          </div>
-
-                          {/* Quick add buttons */}
-                          <div className="flex gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleQuickAdd(product.id, 1)}
-                              className="h-7 w-7 sm:h-8 sm:w-8 p-0"
-                            >
-                              <Plus className="h-2 w-2 sm:h-3 sm:w-3" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleQuickAdd(product.id, 10)}
-                              className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-xs"
-                            >
-                              +10
-                            </Button>
-                          </div>
-                        </div>
+                  <div 
+                    key={product.id} 
+                    className={`grid grid-cols-12 gap-2 py-3 px-3 text-xs sm:text-sm border-b hover:bg-muted/30 ${
+                      index % 2 === 0 ? 'bg-background' : 'bg-muted/10'
+                    }`}
+                  >
+                    {/* Product Name */}
+                    <div className="col-span-5 sm:col-span-6 flex flex-col justify-center min-w-0">
+                      <div className="font-medium text-foreground leading-tight truncate">
+                        {product.name}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+
+                    {/* Category */}
+                    <div className="col-span-2 flex items-center justify-center">
+                      <Badge variant="secondary" className="text-xs px-1 py-0.5 h-auto">
+                        {categoryGroup}
+                      </Badge>
+                    </div>
+
+                    {/* Unit */}
+                    <div className="col-span-2 flex items-center justify-center text-muted-foreground text-xs">
+                      {product.unit}
+                    </div>
+
+                    {/* Stock Controls */}
+                    <div className="col-span-3 sm:col-span-2 flex items-center justify-center gap-1">
+                      {/* Quick subtract */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuickAdd(product.id, -1)}
+                        disabled={currentStock < 1}
+                        className="h-6 w-6 p-0 rounded"
+                      >
+                        <Minus className="h-2 w-2" />
+                      </Button>
+
+                      {/* Stock input */}
+                      <Input
+                        type="number"
+                        value={currentStock}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          handleStockUpdate(product.id, value);
+                        }}
+                        className="w-12 sm:w-14 h-6 text-center text-xs font-bold px-1"
+                        step={isDecimal ? "0.1" : "1"}
+                        min="0"
+                      />
+
+                      {/* Quick add */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuickAdd(product.id, 1)}
+                        className="h-6 w-6 p-0 rounded"
+                      >
+                        <Plus className="h-2 w-2" />
+                      </Button>
+                    </div>
+                  </div>
                 );
               })}
 

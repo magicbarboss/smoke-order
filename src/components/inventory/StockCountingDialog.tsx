@@ -115,66 +115,57 @@ export function StockCountingDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0">
-          {/* Location Selection */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base md:text-lg">Location Selection</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0">
+          {/* Compact Location Selection */}
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-6">
+              <span className="text-sm font-medium text-muted-foreground">Location:</span>
               <RadioGroup 
                 value={selectedLocation} 
                 onValueChange={(value: 'bar' | 'cellar') => setSelectedLocation(value)}
-                className="flex gap-8"
+                className="flex gap-6"
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="cellar" id="cellar" />
-                  <Label htmlFor="cellar" className="text-sm md:text-lg font-medium cursor-pointer">
+                  <Label htmlFor="cellar" className="text-sm font-medium cursor-pointer">
                     Cellar
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="bar" id="bar" />
-                  <Label htmlFor="bar" className="text-sm md:text-lg font-medium cursor-pointer">
+                  <Label htmlFor="bar" className="text-sm font-medium cursor-pointer">
                     Bar
                   </Label>
                 </div>
               </RadioGroup>
-            </CardContent>
-          </Card>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="px-2 py-1 text-xs">
+                {countedProducts.length} / {filteredProducts.length}
+              </Badge>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={resetLocation}
+                className="text-muted-foreground hover:text-destructive text-xs h-8 px-2"
+              >
+                <RotateCcw className="h-3 w-3 mr-1" />
+                Reset
+              </Button>
+            </div>
+          </div>
 
-          {/* Progress and Search */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <Badge variant="outline" className="px-3 py-1 text-xs">
-                    {countedProducts.length} / {filteredProducts.length} counted
-                  </Badge>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={resetLocation}
-                    className="text-muted-foreground hover:text-destructive text-xs sm:text-sm"
-                  >
-                    <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                    Reset {selectedLocation}
-                  </Button>
-                </div>
-                <div className="flex-1 max-w-md">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      placeholder="Search products..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Compact Search */}
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-9"
+            />
+          </div>
 
           {/* Product List */}
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -185,11 +176,11 @@ export function StockCountingDialog({
             </div>
             
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-2 py-2 px-3 bg-muted/50 rounded-t-lg border text-xs sm:text-sm font-medium text-muted-foreground">
-              <div className="col-span-5 sm:col-span-6">Product</div>
+            <div className="grid grid-cols-12 gap-3 py-2 px-3 bg-muted/50 rounded-t-lg border text-xs sm:text-sm font-medium text-muted-foreground">
+              <div className="col-span-4 sm:col-span-5">Product</div>
               <div className="col-span-2 text-center">Category</div>
-              <div className="col-span-2 text-center">Unit</div>
-              <div className="col-span-3 sm:col-span-2 text-center">Stock Count</div>
+              <div className="col-span-1 text-center">Unit</div>
+              <div className="col-span-5 sm:col-span-4 text-center">Stock Count</div>
             </div>
 
             <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y border-x border-b rounded-b-lg" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -201,13 +192,13 @@ export function StockCountingDialog({
                 return (
                   <div 
                     key={product.id} 
-                    className={`grid grid-cols-12 gap-2 py-3 px-3 text-xs sm:text-sm border-b hover:bg-muted/30 ${
+                    className={`grid grid-cols-12 gap-3 py-4 px-3 text-xs sm:text-sm border-b hover:bg-muted/30 ${
                       index % 2 === 0 ? 'bg-background' : 'bg-muted/10'
                     }`}
                   >
                     {/* Product Name */}
-                    <div className="col-span-5 sm:col-span-6 flex flex-col justify-center min-w-0">
-                      <div className="font-medium text-foreground leading-tight truncate">
+                    <div className="col-span-4 sm:col-span-5 flex flex-col justify-center min-w-0">
+                      <div className="font-medium text-foreground leading-tight">
                         {product.name}
                       </div>
                     </div>
@@ -220,21 +211,21 @@ export function StockCountingDialog({
                     </div>
 
                     {/* Unit */}
-                    <div className="col-span-2 flex items-center justify-center text-muted-foreground text-xs">
+                    <div className="col-span-1 flex items-center justify-center text-muted-foreground text-xs">
                       {product.unit}
                     </div>
 
                     {/* Stock Controls */}
-                    <div className="col-span-3 sm:col-span-2 flex items-center justify-center gap-1">
+                    <div className="col-span-5 sm:col-span-4 flex items-center justify-center gap-2">
                       {/* Quick subtract */}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleQuickAdd(product.id, -1)}
                         disabled={currentStock < 1}
-                        className="h-8 w-8 p-0 rounded touch-manipulation active:scale-95 transition-transform"
+                        className="h-10 w-10 p-0 rounded touch-manipulation active:scale-95 transition-transform"
                       >
-                        <Minus className="h-3 w-3" />
+                        <Minus className="h-4 w-4" />
                       </Button>
 
                       {/* Stock input */}
@@ -251,7 +242,7 @@ export function StockCountingDialog({
                         }}
                         onFocus={(e) => e.currentTarget.select()}
                         placeholder="0"
-                        className="w-16 sm:w-20 h-9 sm:h-10 text-center text-sm font-bold px-1 touch-manipulation"
+                        className="w-20 sm:w-28 h-12 sm:h-14 text-center text-base sm:text-lg font-bold px-2 touch-manipulation"
                         inputMode={isDecimal ? "decimal" : "numeric"}
                         autoComplete="off"
                       />
@@ -261,9 +252,9 @@ export function StockCountingDialog({
                         variant="outline"
                         size="sm"
                         onClick={() => handleQuickAdd(product.id, 1)}
-                        className="h-8 w-8 p-0 rounded touch-manipulation active:scale-95 transition-transform"
+                        className="h-10 w-10 p-0 rounded touch-manipulation active:scale-95 transition-transform"
                       >
-                        <Plus className="h-3 w-3" />
+                        <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

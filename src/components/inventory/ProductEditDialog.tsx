@@ -323,14 +323,14 @@ export function ProductEditDialog({
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-5xl h-[85vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="flex flex-col sm:max-w-5xl sm:w-[95vw] sm:h-[85vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Edit Products - {supplierName}</DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 space-y-4 overflow-hidden">
+        <div className="flex flex-col flex-1 min-h-0 space-y-4">
           {/* Filters */}
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-end px-1">
+          <div className="flex-shrink-0 flex flex-col md:flex-row gap-4 items-start md:items-end">
             <div className="flex-1 w-full">
               <Label htmlFor="search-filter">Search Products</Label>
               <Input
@@ -370,7 +370,7 @@ export function ProductEditDialog({
           </div>
 
           {/* Products Grid */}
-          <div className="flex-1 overflow-y-auto px-1 -webkit-overflow-scrolling-touch" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex-1 min-h-0 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="space-y-4 pb-4">
             {filteredProducts.map(product => {
               const editingProduct = editingProducts[product.id];
@@ -509,27 +509,27 @@ export function ProductEditDialog({
               No products found matching your filters.
             </div>
           )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4 border-t">
-            <div className="text-sm text-muted-foreground">
-              {hasChanges() ? (
-                `${getChangedProducts().length} product(s) with changes`
-              ) : (
-                "No changes made"
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSaveChanges}
-                disabled={!hasChanges() || updating}
-              >
-                {updating ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
+        {/* Actions Footer */}
+        <div className="flex-shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4 border-t">
+          <div className="text-sm text-muted-foreground">
+            {hasChanges() ? (
+              `${getChangedProducts().length} product(s) with changes`
+            ) : (
+              "No changes made"
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveChanges}
+              disabled={!hasChanges() || updating}
+            >
+              {updating ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
         </div>
       </DialogContent>

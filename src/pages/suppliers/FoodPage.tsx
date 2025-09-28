@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrders } from "@/hooks/useOrders";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
+import { AddProductDialog } from "@/components/inventory/AddProductDialog";
 import { ProductEditDialog } from "@/components/inventory/ProductEditDialog";
 import { OrderHistoryDialog } from "@/components/inventory/OrderHistoryDialog";
 import { StockCountingDialog } from "@/components/inventory/StockCountingDialog";
@@ -173,12 +174,27 @@ export default function FoodPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl md:text-3xl font-bold text-foreground">{supplier?.name}</h1>
-          <p className="text-sm md:text-base text-muted-foreground">Food ordering list - Via App by 8pm night before</p>
+      {/* Header Section */}
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-xl md:text-3xl font-bold text-foreground">Ordering from: {supplier?.name}</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Food ordering list - Via App by 8pm night before</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="flex items-center gap-2 px-3 py-1">
+              <Clock className="h-4 w-4 text-primary" />
+              <span className="font-medium">Deadline: {supplier?.deadline}</span>
+            </Badge>
+            <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1">
+              <Building className="h-4 w-4 text-primary" />
+              <span className="font-medium">Account: {supplier?.account}</span>
+            </Badge>
+          </div>
         </div>
-        <div className="flex gap-2">
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-2">
           <StockCountingDialog
             products={filteredProducts}
             stockLevels={Object.fromEntries(
@@ -190,6 +206,13 @@ export default function FoodPage() {
             onStockChange={handleStockChange}
             getCategoryGroup={(category) => category.toUpperCase()}
             getProductLocations={(category) => ['bar', 'cellar']}
+          />
+
+          <AddProductDialog
+            supplierId="salvo-charles"
+            supplierName={supplier?.name || "Salvo & Charles"}
+            existingCategories={categories}
+            onProductAdded={fetchProducts}
           />
 
           <OrderHistoryDialog
@@ -215,16 +238,6 @@ export default function FoodPage() {
               </Button>
             }
           />
-        </div>
-        <div className="flex items-center space-x-4">
-          <Badge variant="outline" className="flex items-center gap-2 px-4 py-2">
-            <Clock className="h-4 w-4 text-primary" />
-            <span className="font-medium">Deadline: {supplier?.deadline}</span>
-          </Badge>
-          <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
-            <Building className="h-4 w-4 text-primary" />
-            <span className="font-medium">Account: {supplier?.account}</span>
-          </Badge>
         </div>
       </div>
 
@@ -306,7 +319,7 @@ export default function FoodPage() {
               <CardTitle className="flex items-center justify-between text-foreground">
                 <span className="flex items-center gap-2">
                   <ShoppingCart className="h-5 w-5 text-primary" />
-                  Order Summary
+                  Order Summary - {supplier?.name}
                 </span>
                 <Badge variant="secondary" className="text-lg px-3 py-1">
                   £{totalCost.toFixed(2)}

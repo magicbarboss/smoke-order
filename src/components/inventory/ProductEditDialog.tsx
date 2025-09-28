@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings, Eye, EyeOff } from "lucide-react";
+import { suppliers } from "@/data/suppliers";
 
 interface Product {
   id: string;
@@ -434,9 +435,11 @@ export function ProductEditDialog({
                         <SelectValue placeholder="Select supplier..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="salvo-charles">Salvo & Charles Saunders</SelectItem>
-                        <SelectItem value="salvo">Salvo</SelectItem>
-                        <SelectItem value="charles-saunders">Charles Saunders</SelectItem>
+                        {suppliers.map(supplier => (
+                          <SelectItem key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
